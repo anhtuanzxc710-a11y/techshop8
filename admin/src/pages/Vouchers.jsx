@@ -7,7 +7,7 @@ import { Tag, Trash2, Edit3, Plus, Search, Calendar, ChevronRight, Filter } from
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Vouchers = () => {
-    const { aToken, backendUrl } = useContext(AdminContext);
+    const { aToken, backendurl } = useContext(AdminContext);
     const [vouchers, setVouchers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -16,7 +16,7 @@ const Vouchers = () => {
     const fetchVouchers = async () => {
         setLoading(true);
         try {
-            const { data } = await axios.get(backendUrl + '/api/voucher/list', { headers: { aToken } });
+            const { data } = await axios.get(backendurl + '/api/voucher/list', { headers: { aToken } });
             if (data.success) {
                 setVouchers(data.vouchers);
             } else {
@@ -32,7 +32,7 @@ const Vouchers = () => {
     const removeVoucher = async (id) => {
         if (!window.confirm("Bạn có chắc chắn muốn xóa voucher này không?")) return;
         try {
-            const { data } = await axios.post(backendUrl + '/api/voucher/remove', { id }, { headers: { aToken } });
+            const { data } = await axios.post(backendurl + '/api/voucher/remove', { id }, { headers: { aToken } });
             if (data.success) {
                 toast.success("Đã xóa voucher");
                 fetchVouchers();

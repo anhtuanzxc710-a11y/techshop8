@@ -6,7 +6,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Tag, Calendar, DollarSign, Percent, Info, Save, ArrowLeft } from 'lucide-react';
 
 const AddVoucher = () => {
-    const { aToken, backendUrl } = useContext(AdminContext);
+    const { aToken, backendurl } = useContext(AdminContext);
     const navigate = useNavigate();
     const location = useLocation();
     
@@ -42,7 +42,7 @@ const AddVoucher = () => {
             };
 
             const endpoint = isEdit ? '/api/voucher/update' : '/api/voucher/add';
-            const { data } = await axios.post(backendUrl + endpoint, voucherData, { headers: { aToken } });
+            const { data } = await axios.post(backendurl + endpoint, voucherData, { headers: { aToken } });
 
             if (data.success) {
                 toast.success(data.message);
