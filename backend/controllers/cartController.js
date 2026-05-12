@@ -127,6 +127,12 @@ const createCart = async (req, res) => {
     if (voucherCode) {
       const voucher = await voucherModel.findOne({ code: voucherCode.toUpperCase(), isActive: true });
       if (voucher && new Date() <= new Date(voucher.expirationDate) && voucher.usedCount < voucher.usageLimit && subTotalAmount >= voucher.minOrderValue) {
+        // Kiểm tra xem người dùng đã sử dụng mã này chưa
+        const alreadyUsed = await voucherModel.checkUserUsage(userId, voucher._id);
+        if (alreadyUsed) {
+          return res.status(400).json({ success: false, message: "Bạn đã sử dụng mã giảm giá này cho một đơn hàng trước đó" });
+        }
+
         if (voucher.discountType === "fixed") {
           discountAmount = voucher.discountValue;
         } else {
@@ -137,7 +143,7 @@ const createCart = async (req, res) => {
         }
         finalTotalPrice = Math.max(0, subTotalAmount - discountAmount);
         voucherId = voucher._id;
-        await voucherModel.findByIdAndUpdate(voucher._id, { $inc: { usedCount: 1 } });
+        // Bỏ việc tự increment ở đây vì Stored Procedure sp_CreateOrder sẽ tự thực hiện increment và ghi log UserVoucherUsage
       }
     }
 

@@ -82,6 +82,15 @@ const voucherModel = {
         return true;
     },
 
+    async checkUserUsage(userId, voucherId) {
+        const pool = await connectDB();
+        const result = await pool.request()
+            .input('UserID', sql.Int, userId)
+            .input('VoucherID', sql.Int, voucherId)
+            .query("SELECT * FROM UserVoucherUsage WHERE UserID = @UserID AND VoucherID = @VoucherID");
+        return result.recordset.length > 0;
+    },
+
     _mapVoucher(row) {
         return {
             _id: row.VoucherID,

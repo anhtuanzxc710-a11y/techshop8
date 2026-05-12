@@ -46,7 +46,7 @@ const CheckoutAddToCart = () => {
       const response = await axios.post(backendurl + '/api/voucher/validate', {
         code: voucherCode,
         orderAmount: basePrice
-      });
+      }, { headers: { token } });
 
       if (response.data.success) {
         setAppliedVoucher({

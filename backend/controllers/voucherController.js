@@ -70,6 +70,14 @@ const validateVoucher = async (req, res) => {
       return res.json({ success: false, message: "Voucher usage limit reached" });
     }
 
+    // Kiểm tra xem người dùng đã sử dụng mã này chưa
+    if (req.body.userId) {
+        const alreadyUsed = await voucherModel.checkUserUsage(req.body.userId, voucher._id);
+        if (alreadyUsed) {
+            return res.json({ success: false, message: "Bạn đã sử dụng mã giảm giá này rồi" });
+        }
+    }
+
     // Check minimum order amount
     if (orderAmount < voucher.minOrderValue) {
       return res.json({ 
