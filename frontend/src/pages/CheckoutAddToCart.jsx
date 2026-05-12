@@ -97,7 +97,7 @@ const CheckoutAddToCart = () => {
       };
 
       if (isFullCart) {
-        payload.items = checkoutItems.map(i => ({ itemId: i.productId, quantity: i.quantity, price: i.product.price }));
+        payload.items = checkoutItems.map(i => ({ productId: i.productId, quantity: i.quantity, price: i.product.price }));
       } else {
         payload.itemId = cartData.prID;
         payload.totalItems = cartData.quantity;
