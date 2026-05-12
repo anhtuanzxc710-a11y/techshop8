@@ -136,7 +136,7 @@ const callback = async (req, res) => {
             // Thành công
             try {
                 // Cập nhật trạng thái thanh toán trong giỏ hàng
-                await cartModel.findByIdAndUpdate(itemId, { paymentStatus: true });
+                await cartModel.findByIdAndUpdate(itemId, { payment: true });
                 console.log("Cart updated successfully.");
             } catch (err) {
                 console.error("Update cart failed:", err);
