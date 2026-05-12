@@ -83,6 +83,7 @@ const cartModel = {
                 `);
             order.items = itemsRes.recordset;
             // Backwards compatibility
+            order.userId = order.UserID;
             if (order.items.length > 0) {
                 order.itemId = order.items[0].ProductID;
                 order.status = order.OrderStatus;
@@ -113,6 +114,7 @@ const cartModel = {
                 .query('SELECT o.*, p.ProductName, p.ImageURL FROM OrderItem o JOIN Product p ON o.ProductID = p.ProductID WHERE o.OrderID = @OrderID');
              
              order._id = order.OrderID;
+             order.userId = order.UserID;
              order.status = order.OrderStatus;
              order.totalPrice = order.TotalAmount; // Frontend expects totalPrice
              order.totalItems = order.TotalItems;
@@ -153,6 +155,23 @@ const cartModel = {
         }
 
         return await this.findById(id);
+    },
+
+    async findByIdAndDelete(id) {
+        const pool = await connectDB();
+        const transaction = new sql.Transaction(pool);
+        await transaction.begin();
+        try {
+            const request = new sql.Request(transaction);
+            request.input('OrderID', sql.Int, id);
+            await request.query('DELETE FROM OrderItem WHERE OrderID = @OrderID');
+            await request.query('DELETE FROM [Order] WHERE OrderID = @OrderID');
+            await transaction.commit();
+            return true;
+        } catch (error) {
+            await transaction.rollback();
+            throw error;
+        }
     }
 };
 

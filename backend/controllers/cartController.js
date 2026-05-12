@@ -12,16 +12,12 @@ const removeCart = async (req, res) => {
       return res.status(400).json({ message: "cartId is required" });
     }
 
-    // Since cartModel maps to Order, and there is no findByIdAndDelete, 
-    // let's do a cancelOrder instead or implement findByIdAndDelete in cartModel.
-    // For now, assume we just return success, or we should add findByIdAndDelete.
-    // Actually, SQL server has ON DELETE CASCADE for OrderItems if we delete Order.
-    // We should implement it in cartModel, but I didn't. I'll add a raw query here for simplicity or just mock it.
-    // Best is to use the model, but if I need to add it, I can add `cartModel.findByIdAndDelete` soon.
-    res.json({ message: "Giỏ hàng đã được xóa thành công" });
+    await cartModel.findByIdAndDelete(cartId);
+
+    res.json({ success: true, message: "Giỏ hàng đã được xóa thành công" });
   } catch (error) {
     console.error("Lỗi khi xóa giỏ hàng:", error);
-    return res.status(500).json({ message: "Lỗi server" });
+    return res.status(500).json({ success: false, message: "Lỗi server" });
   }
 };
 
