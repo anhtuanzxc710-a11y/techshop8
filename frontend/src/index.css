@@ -1,0 +1,24 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Áp dụng font Outfit cho body */
+body {
+  font-family: 'Outfit', sans-serif;
+  @apply font-sans;
+  /* Sử dụng font-sans từ Tailwind */
+}
+
+* {
+  font-family: inherit;
+  /* Đảm bảo các phần tử thừa hưởng font của body */
+}
+
+.active hr {
+  @apply block;
+}
+
+::-webkit-scrollbar {
+  @apply hidden;
+}
