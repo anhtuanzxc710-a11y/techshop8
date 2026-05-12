@@ -66,13 +66,14 @@ const getReplyByUser = async (req, res) => {
         // Lấy danh sách các comment._id
         const commentIds = commentData.map(comment => comment._id);
 
-        // Tìm các reply có commentId nằm trong danh sách commentIds
-        const replyData = await replyModel.find({ commentId: { $in: commentIds } });
+        // Lấy toàn bộ reply và filter bằng JS (phù hợp với Custom SQL Model hiện tại)
+        const allReplies = await replyModel.find({});
+        const replyData = allReplies.filter(reply => commentIds.includes(reply.commentId));
 
         // Trả về danh sách reply
         return res.status(200).json({
             success: true,
-            replies:replyData
+            replies: replyData
         });
     } catch (error) {
         console.error(error);
