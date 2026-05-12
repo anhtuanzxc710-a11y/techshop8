@@ -17,8 +17,21 @@ const OrderDetail = () => {
   const [loading, setLoading] = useState(true);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [ratedProducts, setRatedProducts] = useState([]);
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
+
+  const fetchUserReviews = async () => {
+    try {
+      const { data } = await axios.get(`${backendurl}/api/comment/get-comments`, { headers: { token } });
+      if (data.comments) {
+        const ratedIds = data.comments.map(c => c.productId || c.ProductID);
+        setRatedProducts(ratedIds);
+      }
+    } catch (error) {
+      console.log("Error fetching user reviews:", error);
+    }
+  };
 
   const fetchOrderDetails = async () => {
     try {
@@ -27,7 +40,7 @@ const OrderDetail = () => {
       });
       if (data.success) {
         setOrder(data.order);
-        return data.order; // Trả về để dùng ngay
+        return data.order;
       }
     } catch (error) {
       toast.error("Không thể tải chi tiết đơn hàng");
@@ -40,27 +53,23 @@ const OrderDetail = () => {
   const handleConfirmReceived = async () => {
     if (!window.confirm("Bạn xác nhận đã nhận được kiện hàng này?")) return;
     try {
-      console.log("Confirming delivery for order:", orderId);
       const { data } = await axios.post(`${backendurl}/api/cart/confirm-delivered`, { orderId }, { headers: { token } });
-      console.log("Confirm response:", data);
-      
       if (data.success) {
         toast.success(data.message);
         const updatedOrder = await fetchOrderDetails();
-        console.log("Updated order data:", updatedOrder);
         
+        // Tự động mở đánh giá cho sản phẩm đầu tiên chưa được đánh giá
         if (updatedOrder && updatedOrder.items && updatedOrder.items.length > 0) {
-          console.log("Opening review modal for first product:", updatedOrder.items[0]);
-          setSelectedProduct(updatedOrder.items[0]);
-          setShowReviewModal(true);
-        } else {
-          console.warn("No items found in updated order to review");
+          const unratedProduct = updatedOrder.items.find(item => !ratedProducts.includes(item.ProductID));
+          if (unratedProduct) {
+            setSelectedProduct(unratedProduct);
+            setShowReviewModal(true);
+          }
         }
       } else {
         toast.error(data.message || "Không thể xác nhận nhận hàng");
       }
     } catch (error) {
-      console.error("Error in handleConfirmReceived:", error);
       toast.error(error.message);
     }
   };
@@ -75,16 +84,24 @@ const OrderDetail = () => {
       }, { headers: { token } });
 
       toast.success(data.message || "Cảm ơn bạn đã đánh giá sản phẩm!");
+      setRatedProducts([...ratedProducts, selectedProduct.ProductID]); // Cập nhật state nội bộ
       setShowReviewModal(false);
       setComment('');
       setRating(5);
     } catch (error) {
+      if (error.response?.data?.error?.toLowerCase().includes("already commented")) {
+         setRatedProducts([...ratedProducts, selectedProduct.ProductID]);
+         setShowReviewModal(false);
+      }
       toast.error(error.response?.data?.error || error.message);
     }
   };
 
   useEffect(() => {
-    if (token && orderId) fetchOrderDetails();
+    if (token && orderId) {
+      fetchOrderDetails();
+      fetchUserReviews();
+    }
   }, [token, orderId]);
 
   if (loading) return (
@@ -160,13 +177,19 @@ const OrderDetail = () => {
                     <div className="flex items-center justify-between mt-2">
                       <p className="text-primary font-black">{new Intl.NumberFormat('vi-VN').format(item.UnitPrice)}₫</p>
                       
-                      {order.OrderStatus === 'delivered' && (
+                      {order.OrderStatus === 'delivered' && !ratedProducts.includes(item.ProductID) && (
                         <button 
                           onClick={() => { setSelectedProduct(item); setShowReviewModal(true); }}
                           className="text-xs font-bold text-primary border-2 border-primary px-4 py-1.5 rounded-full hover:bg-primary hover:text-white transition-all"
                         >
                           Đánh giá ngay
                         </button>
+                      )}
+                      
+                      {order.OrderStatus === 'delivered' && ratedProducts.includes(item.ProductID) && (
+                        <span className="text-xs font-bold text-neutral-400 border-2 border-neutral-200 px-4 py-1.5 rounded-full bg-neutral-50 cursor-not-allowed">
+                          Đã đánh giá
+                        </span>
                       )}
                     </div>
                   </div>
