@@ -45,19 +45,19 @@ const Navbar = () => {
 
   return (
     <div className='flex items-center justify-between text-sm py-4 mb-5 border-b border-b-gray-400 relative z-50'>
-      <img onClick={() => navigate('/')} className='w-28 md:w-40 cursor-pointer' src={assets.logo} alt="Our logo" />
+      <img onClick={() => { navigate('/'); setSearch(''); scrollTo(0,0); }} className='w-28 md:w-40 cursor-pointer' src={assets.logo} alt="Our logo" />
 
       <ul className='hidden md:flex items-start gap-6 font-medium text-sm'>
-        <NavLink className='p-2 hover:bg-gray-100 rounded-md w-20 text-center' to='/'>
+        <NavLink onClick={() => { setSearch(''); scrollTo(0,0) }} className='p-2 hover:bg-gray-100 rounded-md w-20 text-center' to='/'>
           <li className='py-1'>Home</li>
         </NavLink>
-        <NavLink className='p-2 hover:bg-gray-100 rounded-md w-32 text-center' to='/products'>
+        <NavLink onClick={() => { setSearch(''); scrollTo(0,0) }} className='p-2 hover:bg-gray-100 rounded-md w-32 text-center' to='/products'>
           <li className='py-1'>All products</li>
         </NavLink>
-        <NavLink className='p-2 hover:bg-gray-100 rounded-md w-20 text-center' to='/about'>
+        <NavLink onClick={() => { setSearch(''); scrollTo(0,0) }} className='p-2 hover:bg-gray-100 rounded-md w-20 text-center' to='/about'>
           <li className='py-1'>About</li>
         </NavLink>
-        <NavLink className='p-2 hover:bg-gray-100 rounded-md w-24 text-center' to='/contact'>
+        <NavLink onClick={() => { setSearch(''); scrollTo(0,0) }} className='p-2 hover:bg-gray-100 rounded-md w-24 text-center' to='/contact'>
           <li className='py-1'>Contact</li>
         </NavLink>
       </ul>
@@ -76,10 +76,10 @@ const Navbar = () => {
         </div>
         <ul className='flex flex-col items-center gap-2 mt-5 px-5 font-medium text-lg'>
           <SearchEngine className='md:block hidden' search={search} setSearch={setSearch} />
-          <NavLink onClick={() => setShowMenu(false)} to='/'><p className='px-4 py-2 rounded'>Home</p></NavLink>
-          <NavLink onClick={() => setShowMenu(false)} to='/products'><p className='px-4 py-2 rounded'>All products</p></NavLink>
-          <NavLink onClick={() => setShowMenu(false)} to='/about'><p className='px-4 py-2 rounded'>About</p></NavLink>
-          <NavLink onClick={() => setShowMenu(false)} to='/contact'><p className='px-4 py-2 rounded'>Contact us</p></NavLink>
+          <NavLink onClick={() => { setShowMenu(false); setSearch(''); scrollTo(0,0); }} to='/'><p className='px-4 py-2 rounded'>Home</p></NavLink>
+          <NavLink onClick={() => { setShowMenu(false); setSearch(''); scrollTo(0,0); }} to='/products'><p className='px-4 py-2 rounded'>All products</p></NavLink>
+          <NavLink onClick={() => { setShowMenu(false); setSearch(''); scrollTo(0,0); }} to='/about'><p className='px-4 py-2 rounded'>About</p></NavLink>
+          <NavLink onClick={() => { setShowMenu(false); setSearch(''); scrollTo(0,0); }} to='/contact'><p className='px-4 py-2 rounded'>Contact us</p></NavLink>
         </ul>
       </div>
 

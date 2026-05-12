@@ -1,12 +1,16 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { AppContext } from '../context/AppContext';
 import { useNavigate } from 'react-router-dom';
 import { FiSearch } from 'react-icons/fi'; // Magnifying glass icon
 
 const SearchEngine = ({ search, setSearch }) => {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState(search || '');
   const { backendurl, token } = useContext(AppContext);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setSearchTerm(search || '');
+  }, [search]);
 
   const handleSearchClick = () => {
     const trimmed = searchTerm.trim();

@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { AppContext } from '../context/AppContext';
 
 const SectionHeader = ({ title, subtitle, linkTo }) => {
+  const { setSearch } = useContext(AppContext);
   return (
     <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
       <div className="max-w-2xl">
@@ -18,6 +20,7 @@ const SectionHeader = ({ title, subtitle, linkTo }) => {
       {linkTo && (
         <Link 
           to={linkTo}
+          onClick={() => { setSearch(''); window.scrollTo(0,0); }}
           className="inline-flex items-center gap-2 text-sm font-bold text-primary hover:text-primary-600 transition-colors group"
         >
           Xem tất cả 

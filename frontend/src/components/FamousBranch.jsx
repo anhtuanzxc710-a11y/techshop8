@@ -1,13 +1,16 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { branch } from '../assets/assets';
 import SectionHeader from './SectionHeader';
+import { AppContext } from '../context/AppContext';
 
 const FamousBranch = () => {
   const navigate = useNavigate();
+  const { setSearch } = useContext(AppContext);
 
   const handleNavigate = (brand) => {
-    localStorage.setItem('brand', brand);  
+    localStorage.setItem('brand', JSON.stringify([brand]));  
+    setSearch('');
     navigate('/products');
   };
 

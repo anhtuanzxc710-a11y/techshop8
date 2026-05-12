@@ -1,9 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { assets } from '../assets/assets';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { AppContext } from '../context/AppContext';
 
 const Banner = () => {
+  const navigate = useNavigate();
+  const { setSearch } = useContext(AppContext);
   const images = [
     {
       url: assets.banner2,
@@ -92,12 +96,15 @@ const Banner = () => {
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.5 }}
             >
-              <a
-                href={images[currentIndex].link}
+              <button
+                onClick={() => {
+                  setSearch('');
+                  navigate(images[currentIndex].link);
+                }}
                 className="btn-primary rounded-full px-8 py-3 text-sm font-bold shadow-glow inline-block"
               >
                 {images[currentIndex].cta}
-              </a>
+              </button>
             </motion.div>
           </div>
         </motion.div>

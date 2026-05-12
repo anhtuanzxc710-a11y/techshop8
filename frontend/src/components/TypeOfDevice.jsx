@@ -1,13 +1,16 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { typeOfProductData } from '../assets/assets';
 import { useNavigate } from 'react-router-dom';
 import SectionHeader from './SectionHeader';
+import { AppContext } from '../context/AppContext';
 
 const TypeOfDevice = () => {
   const navigate = useNavigate();
+  const { setSearch } = useContext(AppContext);
 
   const handleNavigate = (category) => {
-    localStorage.setItem('category', category);
+    localStorage.setItem('category', JSON.stringify([category]));
+    setSearch('');
     navigate('/products');
   };
 

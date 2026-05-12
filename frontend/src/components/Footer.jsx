@@ -1,8 +1,11 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { assets } from '../assets/assets'
 import { useNavigate } from 'react-router-dom'
+import { AppContext } from '../context/AppContext'
+
 const Footer = () => {
   const navigate = useNavigate();
+  const { setSearch } = useContext(AppContext);
   return (
     <div className='md:mx-10'>
       <div className='flex flex-col sm:grid grid-cols-[4fr_1fr_2fr] gap-14 my-10 mt-40 text-sm'>
@@ -19,10 +22,10 @@ const Footer = () => {
             Company
           </p>
           <ul className='flex flex-col gap-2 text-gray-600'>
-            <li className='hover:cursor-pointer hover:underline' onClick={() => { navigate('/'); scrollTo(0, 0) }}>Home</li>
-            <li className='hover:cursor-pointer hover:underline' onClick={() => { navigate('/about'); scrollTo(0, 0) }}>About us</li>
-            <li className='hover:cursor-pointer hover:underline' onClick={() => { navigate('/contact'); scrollTo(0, 0) }}>Contact us</li>
-            <li className='hover:cursor-pointer hover:underline' onClick={() => { navigate('/privacy'); scrollTo(0, 0) }}>Privacy policy</li>
+            <li className='hover:cursor-pointer hover:underline' onClick={() => { navigate('/'); setSearch(''); scrollTo(0, 0) }}>Home</li>
+            <li className='hover:cursor-pointer hover:underline' onClick={() => { navigate('/about'); setSearch(''); scrollTo(0, 0) }}>About us</li>
+            <li className='hover:cursor-pointer hover:underline' onClick={() => { navigate('/contact'); setSearch(''); scrollTo(0, 0) }}>Contact us</li>
+            <li className='hover:cursor-pointer hover:underline' onClick={() => { navigate('/privacy'); setSearch(''); scrollTo(0, 0) }}>Privacy policy</li>
           </ul>
         </div>
         {/*right*/}
