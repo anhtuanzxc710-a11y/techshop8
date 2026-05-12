@@ -7,16 +7,18 @@ import {
   cancelOrder,
   createCart,
   getOrderDetails,
+  confirmOrderDelivered,
 } from "../controllers/cartController.js";
 import authUser from "../middleware/authUser.js";
 
 const cartRouter = express.Router();
- 
+
 cartRouter.post("/create-cart", authUser, createCart);
 cartRouter.post("/list-mycart", authUser, listCart);
 cartRouter.post("/cancel-order", authUser, cancelOrder);
 cartRouter.post("/remove-cart/:cartId", authUser, removeCart);
 cartRouter.post("/change-status", authUser, changeStatus);
 cartRouter.get("/details/:orderId", authUser, getOrderDetails);
+cartRouter.post("/confirm-delivered", authUser, confirmOrderDelivered);
 
 export default cartRouter;

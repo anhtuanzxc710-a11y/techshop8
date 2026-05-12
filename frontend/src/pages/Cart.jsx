@@ -3,7 +3,7 @@ import { AppContext } from '../context/AppContext';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { CheckCircle2, XCircle, Truck, Trash2, CreditCard, Calendar, ShoppingBag, ChevronRight } from 'lucide-react';
+import { CheckCircle2, XCircle, Truck, Trash2, CreditCard, Calendar, ShoppingBag, ChevronRight, Package, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Cart = () => {
@@ -68,18 +68,37 @@ const Cart = () => {
   }, [token, backendurl]);
 
   const getStatusBadge = (item) => {
-    if (item.status === 'processing') {
+    const currentStatus = (item.status || 'pending').toLowerCase();
+
+    if (currentStatus === 'pending') {
       return <span className="flex items-center gap-1.5 text-[10px] font-black uppercase text-amber-600 bg-amber-50 px-3 py-1 rounded-full border border-amber-100">
-        <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse" /> Đang xử lý
+        <Clock className="w-3 h-3" /> Chờ xác nhận
       </span>;
     }
-    if (item.status === 'shipped' || item.paymentStatus === true) {
+    if (currentStatus === 'processing' || currentStatus === 'confirmed') {
+      return <span className="flex items-center gap-1.5 text-[10px] font-black uppercase text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
+        <Package className="w-3 h-3" /> Đang xử lý
+      </span>;
+    }
+    if (currentStatus === 'shipped') {
+      return <span className="flex items-center gap-1.5 text-[10px] font-black uppercase text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100">
+        <Truck className="w-3 h-3" /> Đang giao
+      </span>;
+    }
+    if (currentStatus === 'delivered') {
       return <span className="flex items-center gap-1.5 text-[10px] font-black uppercase text-success bg-success-50 px-3 py-1 rounded-full border border-success-100">
-        <CheckCircle2 className="w-3 h-3" /> Hoàn thành
+        <CheckCircle2 className="w-3 h-3" /> Đã nhận hàng
       </span>;
     }
-    return <span className="flex items-center gap-1.5 text-[10px] font-black uppercase text-error bg-error-50 px-3 py-1 rounded-full border border-error-100">
-      <XCircle className="w-3 h-3" /> Đã hủy
+    if (currentStatus === 'cancelled') {
+      return <span className="flex items-center gap-1.5 text-[10px] font-black uppercase text-error bg-error-50 px-3 py-1 rounded-full border border-error-100">
+        <XCircle className="w-3 h-3" /> Đã hủy
+      </span>;
+    }
+    
+    // Fallback cho trạng thái không xác định
+    return <span className="flex items-center gap-1.5 text-[10px] font-black uppercase text-neutral-600 bg-neutral-100 px-3 py-1 rounded-full border border-neutral-200">
+      <Clock className="w-3 h-3" /> {item.status}
     </span>;
   };
 

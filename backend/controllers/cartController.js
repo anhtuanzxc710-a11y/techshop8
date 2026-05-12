@@ -2,6 +2,7 @@ import cartModel from "../models/cartModel.js";
 import productModel from "../models/productModel.js";
 import userModel from "../models/userModel.js";
 import voucherModel from "../models/voucherModel.js";
+import { sql, connectDB } from "../config/database.js";
 
 const removeCart = async (req, res) => {
   try {
@@ -76,16 +77,16 @@ const cancelOrder = async (req, res) => {
         message: "Cannot cancel an order that is already shipped or cancelled",
       });
     }
-    
+
     // In SQL, order.itemId might be null if there are multiple items, but for backwards compatibility it uses first item
     if (order.itemId) {
       await productModel.findByIdAndUpdate(order.itemId, {
         $inc: { stock_quantity: order.TotalItems || 1 },
       });
     }
-    
+
     await cartModel.findByIdAndUpdate(orderId, { status: "cancelled" });
-    
+
     return res.status(200).json({ message: "Order cancelled successfully" });
   } catch (error) {
     return res
@@ -108,7 +109,7 @@ const createCart = async (req, res) => {
       for (const item of items) {
         const product = await productModel.findById(item.productId);
         if (!product || product.stock_quantity < item.quantity) {
-          return res.status(400).json({ success: false, message: `Sản phẩm ${product?.ProductName || 'ID: '+item.productId} không đủ tồn kho` });
+          return res.status(400).json({ success: false, message: `Sản phẩm ${product?.ProductName || 'ID: ' + item.productId} không đủ tồn kho` });
         }
         finalItems.push({ itemId: item.productId, quantity: item.quantity, price: product.price });
         subTotalAmount += product.price * item.quantity;
@@ -145,14 +146,14 @@ const createCart = async (req, res) => {
     }
 
     const orderData = {
-        userId,
-        voucherId,
-        subTotal: subTotalAmount,
-        discountAmount,
-        totalAmount: finalTotalPrice,
-        items: finalItems,
-        paymentMethod,
-        shippingAddress
+      userId,
+      voucherId,
+      subTotal: subTotalAmount,
+      discountAmount,
+      totalAmount: finalTotalPrice,
+      items: finalItems,
+      paymentMethod,
+      shippingAddress
     };
 
     const cart = await cartModel.createOrder(orderData);
@@ -188,6 +189,34 @@ const getOrderDetails = async (req, res) => {
   }
 };
 
+const confirmOrderDelivered = async (req, res) => {
+    try {
+        const { orderId, userId } = req.body;
+        const pool = await connectDB();
+        
+        const checkOrder = await pool.request()
+            .input('OrderID', sql.Int, orderId)
+            .input('UserID', sql.Int, userId)
+            .query("SELECT OrderStatus FROM [Order] WHERE OrderID = @OrderID AND UserID = @UserID");
+
+        if (checkOrder.recordset.length === 0) {
+            return res.json({ success: false, message: "Đơn hàng không tồn tại" });
+        }
+
+        if (checkOrder.recordset[0].OrderStatus !== 'shipped') {
+            return res.json({ success: false, message: "Chỉ có thể xác nhận đơn hàng đang giao" });
+        }
+
+        await pool.request()
+            .input('OrderID', sql.Int, orderId)
+            .query("UPDATE [Order] SET OrderStatus = 'delivered', UpdatedAt = SYSDATETIME() WHERE OrderID = @OrderID");
+
+        res.json({ success: true, message: "Xác nhận nhận hàng thành công!" });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+}
+
 export {
   removeCart,
   getCarts,
@@ -196,4 +225,5 @@ export {
   cancelOrder,
   createCart,
   getOrderDetails,
+  confirmOrderDelivered
 };

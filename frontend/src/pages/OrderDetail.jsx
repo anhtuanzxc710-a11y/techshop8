@@ -15,6 +15,10 @@ const OrderDetail = () => {
   const { backendurl, token, userData } = useContext(AppContext);
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState('');
 
   const fetchOrderDetails = async () => {
     try {
@@ -23,12 +27,59 @@ const OrderDetail = () => {
       });
       if (data.success) {
         setOrder(data.order);
+        return data.order; // Trả về để dùng ngay
       }
     } catch (error) {
       toast.error("Không thể tải chi tiết đơn hàng");
-      console.error(error);
     } finally {
       setLoading(false);
+    }
+    return null;
+  };
+
+  const handleConfirmReceived = async () => {
+    if (!window.confirm("Bạn xác nhận đã nhận được kiện hàng này?")) return;
+    try {
+      console.log("Confirming delivery for order:", orderId);
+      const { data } = await axios.post(`${backendurl}/api/cart/confirm-delivered`, { orderId }, { headers: { token } });
+      console.log("Confirm response:", data);
+      
+      if (data.success) {
+        toast.success(data.message);
+        const updatedOrder = await fetchOrderDetails();
+        console.log("Updated order data:", updatedOrder);
+        
+        if (updatedOrder && updatedOrder.items && updatedOrder.items.length > 0) {
+          console.log("Opening review modal for first product:", updatedOrder.items[0]);
+          setSelectedProduct(updatedOrder.items[0]);
+          setShowReviewModal(true);
+        } else {
+          console.warn("No items found in updated order to review");
+        }
+      } else {
+        toast.error(data.message || "Không thể xác nhận nhận hàng");
+      }
+    } catch (error) {
+      console.error("Error in handleConfirmReceived:", error);
+      toast.error(error.message);
+    }
+  };
+
+  const handleSubmitReview = async (e) => {
+    e.preventDefault();
+    try {
+      const { data } = await axios.post(`${backendurl}/api/comment/create-comment`, {
+        productId: selectedProduct.ProductID,
+        rating,
+        text: comment
+      }, { headers: { token } });
+
+      toast.success(data.message || "Cảm ơn bạn đã đánh giá sản phẩm!");
+      setShowReviewModal(false);
+      setComment('');
+      setRating(5);
+    } catch (error) {
+      toast.error(error.response?.data?.error || error.message);
     }
   };
 
@@ -51,13 +102,17 @@ const OrderDetail = () => {
 
   const statusMap = {
     'pending': { label: 'Chờ xác nhận', color: 'text-amber-500', bg: 'bg-amber-50', icon: <Clock /> },
-    'confirmed': { label: 'Đã xác nhận', color: 'text-blue-500', bg: 'bg-blue-50', icon: <Package /> },
+    'processing': { label: 'Đang xử lý', color: 'text-blue-500', bg: 'bg-blue-50', icon: <Package /> },
+    'confirmed': { label: 'Đang xử lý', color: 'text-blue-500', bg: 'bg-blue-50', icon: <Package /> },
     'shipped': { label: 'Đang giao hàng', color: 'text-indigo-500', bg: 'bg-indigo-50', icon: <Truck /> },
-    'delivered': { label: 'Đã giao hàng', color: 'text-success', bg: 'bg-green-50', icon: <CheckCircle2 /> },
+    'delivered': { label: 'Đã nhận hàng', color: 'text-success', bg: 'bg-green-50', icon: <CheckCircle2 /> },
     'cancelled': { label: 'Đã hủy', color: 'text-error', bg: 'bg-red-50', icon: <ShoppingBag /> },
   };
 
-  const currentStatus = statusMap[order.OrderStatus] || statusMap['pending'];
+  const currentStatusString = (order.OrderStatus || 'pending').toLowerCase();
+  const currentStatus = statusMap[currentStatusString] || { 
+    label: order.OrderStatus, color: 'text-neutral-500', bg: 'bg-neutral-50', icon: <Clock /> 
+  };
 
   return (
     <div className="container-main py-8 lg:py-12">
@@ -77,6 +132,15 @@ const OrderDetail = () => {
               <p className="text-sm font-bold text-neutral-500 uppercase tracking-widest mb-1">Trạng thái đơn hàng</p>
               <h2 className={`text-2xl font-black ${currentStatus.color}`}>{currentStatus.label}</h2>
               <p className="text-neutral-500 text-xs mt-2">Mã đơn hàng: #{order.OrderID}</p>
+              
+              {order.OrderStatus === 'shipped' && (
+                <button 
+                  onClick={handleConfirmReceived}
+                  className="mt-4 bg-primary text-white px-6 py-2 rounded-full font-bold shadow-lg shadow-primary/20 hover:scale-105 transition-all"
+                >
+                  Xác nhận đã nhận hàng
+                </button>
+              )}
             </div>
             <div className={`w-16 h-16 rounded-2xl ${currentStatus.color} flex items-center justify-center opacity-20 bg-current scale-110`}>
               {React.cloneElement(currentStatus.icon, { className: "w-8 h-8" })}
@@ -89,11 +153,22 @@ const OrderDetail = () => {
             <div className="space-y-6">
               {order.items.map((item, idx) => (
                 <div key={idx} className="flex gap-4 pb-6 border-b border-neutral-50 last:border-0 last:pb-0">
-                  <img src={item.ImageURL} alt={item.ProductName} className="w-20 h-20 rounded-2xl bg-neutral-50 border border-neutral-100 object-contain p-2" />
+                  <img src={item.ImageURL} alt={item.ProductName} className="w-24 h-24 rounded-2xl bg-neutral-50 border border-neutral-100 object-contain p-2" />
                   <div className="flex-1">
                     <h4 className="font-bold text-neutral-900 leading-tight mb-1">{item.ProductName}</h4>
                     <p className="text-sm text-neutral-500">Số lượng: {item.Quantity}</p>
-                    <p className="text-primary font-black mt-2">{new Intl.NumberFormat('vi-VN').format(item.UnitPrice)}₫</p>
+                    <div className="flex items-center justify-between mt-2">
+                      <p className="text-primary font-black">{new Intl.NumberFormat('vi-VN').format(item.UnitPrice)}₫</p>
+                      
+                      {order.OrderStatus === 'delivered' && (
+                        <button 
+                          onClick={() => { setSelectedProduct(item); setShowReviewModal(true); }}
+                          className="text-xs font-bold text-primary border-2 border-primary px-4 py-1.5 rounded-full hover:bg-primary hover:text-white transition-all"
+                        >
+                          Đánh giá ngay
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -153,6 +228,60 @@ const OrderDetail = () => {
           </div>
         </div>
       </div>
+
+      {/* Review Modal */}
+      {showReviewModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <motion.div 
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-white rounded-[40px] w-full max-w-md p-10 relative overflow-hidden"
+          >
+            <div className="absolute top-0 left-0 w-full h-2 bg-primary"></div>
+            <h3 className="text-2xl font-black text-neutral-900 mb-2">Đánh giá sản phẩm</h3>
+            <p className="text-neutral-500 text-sm mb-8">{selectedProduct?.ProductName}</p>
+
+            <form onSubmit={handleSubmitReview} className="space-y-6">
+              <div className="flex justify-center gap-2 mb-4">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => setRating(star)}
+                    className={`text-3xl transition-transform active:scale-125 ${star <= rating ? 'text-amber-400' : 'text-neutral-200'}`}
+                  >
+                    ★
+                  </button>
+                ))}
+              </div>
+
+              <textarea
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm này..."
+                className="w-full h-32 rounded-3xl bg-neutral-50 border-none p-6 text-sm focus:ring-2 focus:ring-primary/20 outline-none resize-none"
+                required
+              />
+
+              <div className="flex gap-4">
+                <button 
+                  type="button"
+                  onClick={() => setShowReviewModal(false)}
+                  className="flex-1 py-4 rounded-full font-bold text-neutral-500 hover:bg-neutral-100 transition-colors"
+                >
+                  Hủy
+                </button>
+                <button 
+                  type="submit"
+                  className="flex-1 py-4 rounded-full font-bold bg-primary text-white shadow-xl shadow-primary/20 hover:scale-105 transition-all"
+                >
+                  Gửi đánh giá
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 };
