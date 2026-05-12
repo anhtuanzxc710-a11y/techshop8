@@ -16,13 +16,13 @@ const Contact = () => {
         </div>
         <div className='flex flex-col justify-center items-start gap-6'>
           <p className='flex flex-col justify-center font-semibold'>Our OFFICE</p>
-          <p className='text-gray-600'>10 TRẦN PHÚ HÀ ĐÔNG<br />
+          <p className='text-gray-600'>Km10 Đ. Nguyễn Trãi, Hà Đông, Hà Nội, Việt Nam<br />
             Hanoi, Vietnam</p>
           <p className='text-gray-600'>Tel: (84) 862613118<br />Email: <a href="mailto:web262004@gmail.com" className="text-primary hover:underline">web2620042004@gmail.com</a></p>
           <p className='flex flex-col justify-center font-semibold'>Careers at our shop</p>
           <p className='text-gray-600'>Learn more about our teams and job openings.</p>
-          <button onClick={() => navigate('/jobs')} className="bg-gray-200 text-gray-800 border-1 px-4 py-2 rounded transition-transform duration-300 hover:bg-primary hover:text-white hover:scale-110">
-            Explore Jobs
+          <button onClick={() => navigate('')} className="bg-gray-200 text-gray-800 border-1 px-4 py-2 rounded transition-transform duration-300 hover:bg-primary hover:text-white hover:scale-110">
+            Coming soon
           </button>
 
         </div>

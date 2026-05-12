@@ -23,23 +23,22 @@ const Footer = () => {
             <li className='hover:cursor-pointer hover:underline' onClick={() => { navigate('/about'); scrollTo(0, 0) }}>About us</li>
             <li className='hover:cursor-pointer hover:underline' onClick={() => { navigate('/contact'); scrollTo(0, 0) }}>Contact us</li>
             <li className='hover:cursor-pointer hover:underline' onClick={() => { navigate('/privacy'); scrollTo(0, 0) }}>Privacy policy</li>
-            <li className='hover:cursor-pointer hover:underline' onClick={() => { navigate('/jobs'); scrollTo(0, 0) }}>Explore jobs</li>
           </ul>
         </div>
         {/*right*/}
         <div >
-          <p className='text-xl font-medium mb-5'>GET IN TOUGH</p>
+          <p className='text-xl font-medium mb-5'>GET IN TOUCH</p>
           <ul className='flex flex-col gap-2 text-gray-600'>
             <li>Phone number: +84 862613118</li>
-            <li>Gmail-1: <a href="mailto:tuannv7105@gmail.com" className="text-primary hover:underline">tuannv7105@gmail.com</a></li>
-            <li>Gmail-2: <a href="mailto:minhthn@gmail.com" className="text-primary hover:underline">minhthn@gmail.com</a></li>
+            <li>Gmail 1: <a href="mailto:tuannv7105@gmail.com" className="text-primary hover:underline">tuannv7105@gmail.com</a></li>
+            <li>Gmail 2: <a href="mailto:loc@gmail.com" className="text-primary hover:underline">loc@gmail.com</a></li>
           </ul>
         </div>
 
       </div>
       <div>
         <hr />
-        <p className='py-5 text-sm text-center'>Copyright © 2025</p>
+        <p className='py-5 text-sm text-center'>Copyright © 2026</p>
       </div>
     </div>
   )
