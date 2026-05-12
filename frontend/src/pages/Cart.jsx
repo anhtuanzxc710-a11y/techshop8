@@ -161,14 +161,7 @@ const Cart = () => {
                       {new Intl.NumberFormat('vi-VN').format(item.totalPrice)}₫
                     </p>
                     <div className="flex items-center gap-2">
-                      {item.status === 'processing' && !item.paymentStatus && (
-                        <button
-                          onClick={() => handlePayment(item)}
-                          className="btn-primary btn-sm rounded-lg px-4 flex items-center gap-2 shadow-glow"
-                        >
-                          <CreditCard className="w-3.5 h-3.5" /> Thanh toán
-                        </button>
-                      )}
+                      {/* Đã gỡ bỏ nút thanh toán ngoài lịch sử đơn hàng theo yêu cầu */}
                       {item.paymentStatus && (
                         <div className="px-3 py-1.5 bg-success-50 text-success text-[10px] font-black rounded-lg border border-success-100 flex items-center gap-1">
                           <CheckCircle2 className="w-3 h-3" /> ĐÃ THANH TOÁN
