@@ -205,7 +205,7 @@ const confirmOrderDelivered = async (req, res) => {
 
         await pool.request()
             .input('OrderID', sql.Int, orderId)
-            .query("UPDATE [Order] SET OrderStatus = 'delivered', UpdatedAt = SYSDATETIME() WHERE OrderID = @OrderID");
+            .query("UPDATE [Order] SET OrderStatus = 'delivered', PaymentStatus = 1, UpdatedAt = SYSDATETIME() WHERE OrderID = @OrderID");
 
         res.json({ success: true, message: "Xác nhận nhận hàng thành công!" });
     } catch (error) {

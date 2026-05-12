@@ -144,6 +144,9 @@ const cartModel = {
         if (data.status) {
             updates.push('OrderStatus = @OrderStatus');
             request.input('OrderStatus', sql.NVarChar, data.status);
+            if (data.status === 'delivered' && data.payment === undefined) {
+                updates.push('PaymentStatus = 1');
+            }
         }
         if (data.payment) {
             updates.push('PaymentStatus = @PaymentStatus');
