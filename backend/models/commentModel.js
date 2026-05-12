@@ -30,6 +30,14 @@ const commentModel = {
         return this._mapComment(result.recordset[0]);
     },
 
+    async findById(id) {
+        const pool = await connectDB();
+        const request = pool.request().input('CommentID', sql.Int, id);
+        const result = await request.query('SELECT * FROM Comment WHERE CommentID = @CommentID');
+        return this._mapComment(result.recordset[0]);
+    },
+
+
     async find(filter = {}) {
         const pool = await connectDB();
         // Join with User and Product to provide embedded data

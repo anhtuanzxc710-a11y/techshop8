@@ -1,25 +1,31 @@
 import axios from "axios";
 import commentModel from "../models/commentModel.js";
 import replyModel from "../models/replyModel.js";
+import userModel from "../models/userModel.js";
 const replyComment = async(req,res)=>{
     try {
         const {commentId,text}= req.body
         if (!commentId) return res.status(400).json({success:false,message:"Can't get comment by comment id"})
         const commentData= await commentModel.findById(commentId);
         if (!commentData) return res.status(400).json({success:false,message:"Can't get comment by comment data"})
-        const value= {
+        let adminUserId = 1; // Default fallback
+        const adminUser = await userModel.findOne({ email: process.env.ADMIN_EMAIL });
+        if (adminUser) {
+            adminUserId = adminUser._id;
+        }
+
+        const value = {
             commentId,
-            commentData,
+            userId: adminUserId,
             text,
             createAt: Date.now()
-    }
-    const newReply= new replyModel(value);
-    await newReply.save();
-    return res.status(200).json({success:true,message:"Reply successfully"})
+        };
+        const newReply = await replyModel.create(value);
+        return res.status(200).json({success:true, message:"Reply successfully", data: newReply});
     
     } catch (error) {
-        console.log(error);
-        return res.status(404).json({success:false,message:"Error reply"})
+        console.log("Error in replyComment:", error);
+        return res.status(404).json({success:false,message: error.message || "Error reply", stack: error.stack})
     }
 }
 const getAllReplies = async(req,res)=>{

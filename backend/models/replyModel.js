@@ -24,12 +24,13 @@ const replyModel = {
         const pool = await connectDB();
         const request = pool.request()
             .input('CommentID', sql.Int, data.commentId)
+            .input('UserID', sql.Int, data.userId)
             .input('ReplyText', sql.NVarChar, data.text);
 
         const result = await request.query(`
-            INSERT INTO Reply (CommentID, ReplyText)
+            INSERT INTO Reply (CommentID, UserID, ReplyText)
             OUTPUT INSERTED.ReplyID
-            VALUES (@CommentID, @ReplyText)
+            VALUES (@CommentID, @UserID, @ReplyText)
         `);
         
         return {
