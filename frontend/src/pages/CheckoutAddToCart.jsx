@@ -12,17 +12,28 @@ const CheckoutAddToCart = () => {
   const location = useLocation();
   const cartData = location.state || JSON.parse(localStorage.getItem('cartData'));
   
+  // New: Support both single product (buy now) and full cart checkout
+  const isFullCart = Array.isArray(cartData?.items);
+  const checkoutItems = isFullCart 
+    ? cartData.items 
+    : [{ 
+        productId: cartData.prID, 
+        quantity: cartData.quantity,
+        product: products.find(p => String(p._id) === String(cartData.prID))
+      }];
+
+  const basePrice = isFullCart 
+    ? cartData.totalPrice 
+    : (checkoutItems[0].product ? checkoutItems[0].product.price * checkoutItems[0].quantity : 0);
+
   const [address, setAddress] = useState(userData.address || '');
   const [payment, setPayment] = useState('Cash');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Voucher states
   const [voucherCode, setVoucherCode] = useState('');
   const [appliedVoucher, setAppliedVoucher] = useState(null);
   const [isValidating, setIsValidating] = useState(false);
 
-  const product = products.find((p) => String(p._id) === String(cartData.prID));
-  const basePrice = product ? product.price * cartData.quantity : 0;
   const totalPrice = appliedVoucher ? basePrice - appliedVoucher.discount : basePrice;
 
   const handleValidateVoucher = async () => {
@@ -67,17 +78,28 @@ const CheckoutAddToCart = () => {
 
     setIsSubmitting(true);
     try {
-      const response = await axios.post(backendurl + '/api/cart/create-cart', {
+      const payload = {
         userId: userData._id,
-        itemId: cartData.prID,
-        totalItems: cartData.quantity,
         paymentMethod: payment,
         shippingAddress: address,
         voucherCode: appliedVoucher?.code || ""
-      }, { headers: { token } });
+      };
+
+      if (isFullCart) {
+        payload.items = checkoutItems.map(i => ({ productId: i.productId, quantity: i.quantity }));
+      } else {
+        payload.itemId = cartData.prID;
+        payload.totalItems = cartData.quantity;
+      }
+
+      const response = await axios.post(backendurl + '/api/cart/create-cart', payload, { headers: { token } });
 
       if (response.data.success) {
         toast.success("Đặt hàng thành công!");
+        // Nếu mua từ giỏ hàng, ta cần xóa sạch giỏ hàng sau khi đặt thành công
+        if (isFullCart) {
+           await axios.post(`${backendurl}/api/shopping-cart/clear`, {}, { headers: { token } });
+        }
         navigate('/mycart', { replace: true });
       } else {
         toast.error(response.data.message || "Có lỗi xảy ra");
@@ -109,18 +131,22 @@ const CheckoutAddToCart = () => {
               <h2 className="text-xl font-black text-neutral-900 mb-6 flex items-center gap-3">
                 <ShoppingBag className="w-6 h-6 text-primary" /> Thông tin sản phẩm
               </h2>
-              <div className="flex flex-col sm:flex-row items-center gap-6 bg-neutral-50 rounded-2xl p-4 border border-neutral-100">
-                <div className="w-32 h-32 bg-white rounded-xl flex-shrink-0 overflow-hidden border border-neutral-100">
-                  <img src={product?.image_url} alt={product?.name} className="w-full h-full object-contain p-2" />
-                </div>
-                <div className="flex-1 text-center sm:text-left">
-                  <h3 className="text-lg font-bold text-neutral-900 mb-1">{product?.name}</h3>
-                  <p className="text-sm text-neutral-500 mb-3">Thương hiệu: <span className="font-bold text-neutral-700">{product?.brand}</span></p>
-                  <div className="flex items-center justify-center sm:justify-start gap-4">
-                    <span className="text-xs font-bold text-neutral-400">SL: {cartData.quantity}</span>
-                    <span className="text-primary font-black text-lg">{new Intl.NumberFormat('vi-VN').format(product?.price || 0)}₫</span>
+              <div className="space-y-4">
+                {checkoutItems.map((item, idx) => (
+                  <div key={idx} className="flex flex-col sm:flex-row items-center gap-6 bg-neutral-50 rounded-2xl p-4 border border-neutral-100">
+                    <div className="w-20 h-20 bg-white rounded-xl flex-shrink-0 overflow-hidden border border-neutral-100">
+                      <img src={item.product?.image_url} alt={item.product?.name} className="w-full h-full object-contain p-2" />
+                    </div>
+                    <div className="flex-1 text-center sm:text-left">
+                      <h3 className="text-sm font-bold text-neutral-900 mb-1">{item.product?.name}</h3>
+                      <p className="text-[10px] text-neutral-500 mb-2">Thương hiệu: <span className="font-bold text-neutral-700">{item.product?.brand}</span></p>
+                      <div className="flex items-center justify-center sm:justify-start gap-4">
+                        <span className="text-[10px] font-bold text-neutral-400">Số lượng: {item.quantity}</span>
+                        <span className="text-primary font-black text-sm">{new Intl.NumberFormat('vi-VN').format(item.product?.price || 0)}₫</span>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                ))}
               </div>
             </section>
 

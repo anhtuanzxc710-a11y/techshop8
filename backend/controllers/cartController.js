@@ -96,41 +96,50 @@ const cancelOrder = async (req, res) => {
 
 const createCart = async (req, res) => {
   try {
-    const { userId, itemId, totalItems, paymentMethod, shippingAddress, voucherCode } = req.body;
-
-    const itemData = await productModel.findById(itemId);
+    const { userId, itemId, totalItems, paymentMethod, shippingAddress, voucherCode, items } = req.body;
     const userData = await userModel.findById(userId);
+    if (!userData) return res.status(404).json({ success: false, message: "User not found" });
 
-    if (!itemData || !userData) {
-      return res.status(404).json({ success: false, message: "Item or user not found" });
+    let finalItems = [];
+    let subTotalAmount = 0;
+
+    if (items && Array.isArray(items) && items.length > 0) {
+      // Trường hợp thanh toán giỏ hàng
+      for (const item of items) {
+        const product = await productModel.findById(item.productId);
+        if (!product || product.stock_quantity < item.quantity) {
+          return res.status(400).json({ success: false, message: `Sản phẩm ${product?.ProductName || 'ID: '+item.productId} không đủ tồn kho` });
+        }
+        finalItems.push({ itemId: item.productId, quantity: item.quantity, price: product.price });
+        subTotalAmount += product.price * item.quantity;
+      }
+    } else {
+      // Trường hợp mua ngay 1 sản phẩm
+      const itemData = await productModel.findById(itemId);
+      if (!itemData || totalItems > itemData.stock_quantity) {
+        return res.status(400).json({ success: false, message: "Sản phẩm không đủ tồn kho" });
+      }
+      finalItems.push({ itemId, quantity: totalItems, price: itemData.price });
+      subTotalAmount = itemData.price * totalItems;
     }
 
-    if (totalItems > itemData.stock_quantity || totalItems > 20) {
-      return res.status(400).json({
-        success: false,
-        message: "Max quantity is 20 products per cart or insufficient stock",
-      });
-    }
-
-    let finalTotalPrice = itemData.price * totalItems;
-    let subTotalAmount = finalTotalPrice;
+    let finalTotalPrice = subTotalAmount;
     let discountAmount = 0;
     let voucherId = null;
 
     if (voucherCode) {
       const voucher = await voucherModel.findOne({ code: voucherCode.toUpperCase(), isActive: true });
-      if (voucher && new Date() <= new Date(voucher.expirationDate) && voucher.usedCount < voucher.usageLimit && finalTotalPrice >= voucher.minOrderValue) {
+      if (voucher && new Date() <= new Date(voucher.expirationDate) && voucher.usedCount < voucher.usageLimit && subTotalAmount >= voucher.minOrderValue) {
         if (voucher.discountType === "fixed") {
           discountAmount = voucher.discountValue;
         } else {
-          discountAmount = (finalTotalPrice * voucher.discountValue) / 100;
+          discountAmount = (subTotalAmount * voucher.discountValue) / 100;
           if (voucher.maxDiscountAmount && discountAmount > voucher.maxDiscountAmount) {
             discountAmount = voucher.maxDiscountAmount;
           }
         }
-        finalTotalPrice -= discountAmount;
+        finalTotalPrice = Math.max(0, subTotalAmount - discountAmount);
         voucherId = voucher._id;
-        
         await voucherModel.findByIdAndUpdate(voucher._id, { $inc: { usedCount: 1 } });
       }
     }
@@ -141,16 +150,19 @@ const createCart = async (req, res) => {
         subTotal: subTotalAmount,
         discountAmount,
         totalAmount: finalTotalPrice,
-        items: [{ itemId, quantity: totalItems, price: itemData.price }],
+        items: finalItems,
         paymentMethod,
         shippingAddress
     };
 
     const cart = await cartModel.createOrder(orderData);
 
-    await productModel.findByIdAndUpdate(itemId, {
-      stock_quantity: itemData.stock_quantity - totalItems
-    });
+    for (const item of finalItems) {
+      const product = await productModel.findById(item.itemId);
+      await productModel.findByIdAndUpdate(item.itemId, {
+        stock_quantity: product.stock_quantity - item.quantity
+      });
+    }
 
     res.json({
       success: true,

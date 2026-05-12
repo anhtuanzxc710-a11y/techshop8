@@ -57,7 +57,7 @@ const ShoppingCart = () => {
       toast.warning("Giỏ hàng trống!");
       return;
     }
-    navigate('/checkout-cart');
+    navigate('/checkout', { state: { items: cartItems, totalPrice: totalPrice } });
   };
 
   useEffect(() => {
