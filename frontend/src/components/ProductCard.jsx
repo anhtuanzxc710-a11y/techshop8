@@ -63,17 +63,6 @@ const ProductCard = ({ product }) => {
           alt={product.name}
           className="w-full h-full object-contain p-4 transition-transform duration-700 group-hover:scale-110"
         />
-
-        {/* Quick Action Overlay */}
-        <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
-          <button
-            onClick={handleAddToCart}
-            className="w-10 h-10 rounded-full bg-white text-primary flex items-center justify-center shadow-lg hover:bg-primary hover:text-white transition-all transform translate-y-4 group-hover:translate-y-0 duration-300"
-            title="Thêm vào giỏ hàng"
-          >
-            <Plus className="w-5 h-5" />
-          </button>
-        </div>
       </div>
 
       {/* Product Details */}
