@@ -3,11 +3,19 @@ import { AdminContext } from '../context/AdminContext'
 import { useNavigate } from 'react-router-dom'
 import { assets } from '../assets/assets'
 import Search from './Search'
-import { HiMenuAlt3 } from 'react-icons/hi' // Sử dụng biểu tượng hamburger từ Heroicons
+import { HiMenuAlt3 } from 'react-icons/hi'
+import { useTranslation } from 'react-i18next'
+import { FaGlobe } from 'react-icons/fa'
 
 const Navbar = ({ setSidebarVisible }) => {
     const { aToken, setAToken, search, setSearch } = useContext(AdminContext)
+    const { t, i18n } = useTranslation()
     const navigate = useNavigate()
+
+    const toggleLanguage = () => {
+        const newLang = i18n.language === 'vi' ? 'en' : 'vi';
+        i18n.changeLanguage(newLang);
+    };
 
     const logout = () => {
         navigate('/')
@@ -40,12 +48,21 @@ const Navbar = ({ setSidebarVisible }) => {
 
             {/* Container for logout button and hamburger icon */}
             <div className="flex items-center gap-3">
+                {/* Language Switcher */}
+                <button 
+                    onClick={toggleLanguage}
+                    className="flex items-center gap-2 px-3 py-2 bg-gray-50 border border-gray-200 rounded-full hover:bg-gray-100 transition-all"
+                >
+                    <FaGlobe className="text-blue-500" />
+                    <span className="text-[10px] font-black">{i18n.language.toUpperCase()}</span>
+                </button>
+
                 {/* Logout button */}
                 <button
                     onClick={logout}
                     className="bg-blue-500 text-white px-2 ml-3 md:px-8 py-2 md:py-2 rounded-full hover:cursor-pointer text-xs md:text-sm"
                 >
-                    Logout
+                    {t('common.logout')}
                 </button>
 
                 {/* Biểu tượng hamburger nhỏ nằm đằng sau logout */}
@@ -57,4 +74,4 @@ const Navbar = ({ setSidebarVisible }) => {
     )
 }
 
-export default Navbar
+export default Navbar

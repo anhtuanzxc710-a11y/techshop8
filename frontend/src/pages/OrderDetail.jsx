@@ -8,8 +8,10 @@ import {
   ChevronLeft, CreditCard, Receipt, ShoppingBag 
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 const OrderDetail = () => {
+  const { t, i18n } = useTranslation();
   const { orderId } = useParams();
   const navigate = useNavigate();
   const { backendurl, token, userData } = useContext(AppContext);
@@ -43,7 +45,7 @@ const OrderDetail = () => {
         return data.order;
       }
     } catch (error) {
-      toast.error("Không thể tải chi tiết đơn hàng");
+      toast.error(t('order_detail.not_found'));
     } finally {
       setLoading(false);
     }
@@ -51,7 +53,7 @@ const OrderDetail = () => {
   };
 
   const handleConfirmReceived = async () => {
-    if (!window.confirm("Bạn xác nhận đã nhận được kiện hàng này?")) return;
+    if (!window.confirm(t('order_detail.confirm_received_msg'))) return;
     try {
       const { data } = await axios.post(`${backendurl}/api/cart/confirm-delivered`, { orderId }, { headers: { token } });
       if (data.success) {
@@ -67,7 +69,7 @@ const OrderDetail = () => {
           }
         }
       } else {
-        toast.error(data.message || "Không thể xác nhận nhận hàng");
+        toast.error(data.message || t('order_detail.not_found'));
       }
     } catch (error) {
       toast.error(error.message);
@@ -83,7 +85,7 @@ const OrderDetail = () => {
         text: comment
       }, { headers: { token } });
 
-      toast.success(data.message || "Cảm ơn bạn đã đánh giá sản phẩm!");
+      toast.success(data.message || t('order_detail.rate_success'));
       setRatedProducts([...ratedProducts, selectedProduct.ProductID]); // Cập nhật state nội bộ
       setShowReviewModal(false);
       setComment('');
@@ -112,18 +114,18 @@ const OrderDetail = () => {
 
   if (!order) return (
     <div className="container-main py-20 text-center">
-      <p className="text-neutral-500">Không tìm thấy đơn hàng</p>
-      <button onClick={() => navigate('/mycart')} className="mt-4 btn-primary rounded-full px-6">Quay lại</button>
+      <p className="text-neutral-500">{t('order_detail.not_found')}</p>
+      <button onClick={() => navigate('/mycart')} className="mt-4 btn-primary rounded-full px-6">{t('order_detail.back')}</button>
     </div>
   );
 
   const statusMap = {
-    'pending': { label: 'Chờ xác nhận', color: 'text-amber-500', bg: 'bg-amber-50', icon: <Clock /> },
-    'processing': { label: 'Đang xử lý', color: 'text-blue-500', bg: 'bg-blue-50', icon: <Package /> },
-    'confirmed': { label: 'Đang xử lý', color: 'text-blue-500', bg: 'bg-blue-50', icon: <Package /> },
-    'shipped': { label: 'Đang giao hàng', color: 'text-indigo-500', bg: 'bg-indigo-50', icon: <Truck /> },
-    'delivered': { label: 'Đã nhận hàng', color: 'text-success', bg: 'bg-green-50', icon: <CheckCircle2 /> },
-    'cancelled': { label: 'Đã hủy', color: 'text-error', bg: 'bg-red-50', icon: <ShoppingBag /> },
+    'pending': { label: t('order_detail.pending'), color: 'text-amber-500', bg: 'bg-amber-50', icon: <Clock /> },
+    'processing': { label: t('order_detail.processing'), color: 'text-blue-500', bg: 'bg-blue-50', icon: <Package /> },
+    'confirmed': { label: t('order_detail.confirmed'), color: 'text-blue-500', bg: 'bg-blue-50', icon: <Package /> },
+    'shipped': { label: t('order_detail.shipped'), color: 'text-indigo-500', bg: 'bg-indigo-50', icon: <Truck /> },
+    'delivered': { label: t('order_detail.delivered'), color: 'text-success', bg: 'bg-green-50', icon: <CheckCircle2 /> },
+    'cancelled': { label: t('order_detail.cancelled'), color: 'text-error', bg: 'bg-red-50', icon: <ShoppingBag /> },
   };
 
   const currentStatusString = (order.OrderStatus || 'pending').toLowerCase();
@@ -137,7 +139,7 @@ const OrderDetail = () => {
         onClick={() => navigate('/mycart')}
         className="flex items-center gap-2 text-neutral-500 hover:text-primary font-bold mb-8 transition-colors"
       >
-        <ChevronLeft className="w-5 h-5" /> Quay lại danh sách đơn hàng
+        <ChevronLeft className="w-5 h-5" /> {t('order.back_to_list')}
       </button>
 
       <div className="flex flex-col lg:flex-row gap-8">
@@ -146,16 +148,16 @@ const OrderDetail = () => {
           {/* Status Card */}
           <div className={`${currentStatus.bg} rounded-[32px] p-8 border border-neutral-100 flex items-center justify-between`}>
             <div>
-              <p className="text-sm font-bold text-neutral-500 uppercase tracking-widest mb-1">Trạng thái đơn hàng</p>
+              <p className="text-sm font-bold text-neutral-500 uppercase tracking-widest mb-1">{t('order_detail.status')}</p>
               <h2 className={`text-2xl font-black ${currentStatus.color}`}>{currentStatus.label}</h2>
-              <p className="text-neutral-500 text-xs mt-2">Mã đơn hàng: #{order.OrderID}</p>
+              <p className="text-neutral-500 text-xs mt-2">{t('order_detail.id')}: #{order.OrderID}</p>
               
               {order.OrderStatus === 'shipped' && (
                 <button 
                   onClick={handleConfirmReceived}
                   className="mt-4 bg-primary text-white px-6 py-2 rounded-full font-bold shadow-lg shadow-primary/20 hover:scale-105 transition-all"
                 >
-                  Xác nhận đã nhận hàng
+                  {t('order_detail.confirm_received')}
                 </button>
               )}
             </div>
@@ -166,14 +168,14 @@ const OrderDetail = () => {
 
           {/* Items List */}
           <div className="bg-white rounded-[32px] p-8 border border-neutral-100 shadow-sm">
-            <h3 className="text-xl font-black text-neutral-900 mb-6">Sản phẩm đã mua</h3>
+            <h3 className="text-xl font-black text-neutral-900 mb-6">{t('order_detail.purchased_products')}</h3>
             <div className="space-y-6">
               {order.items.map((item, idx) => (
                 <div key={idx} className="flex gap-4 pb-6 border-b border-neutral-50 last:border-0 last:pb-0">
                   <img src={item.ImageURL} alt={item.ProductName} className="w-24 h-24 rounded-2xl bg-neutral-50 border border-neutral-100 object-contain p-2" />
                   <div className="flex-1">
                     <h4 className="font-bold text-neutral-900 leading-tight mb-1">{item.ProductName}</h4>
-                    <p className="text-sm text-neutral-500">Số lượng: {item.Quantity}</p>
+                    <p className="text-sm text-neutral-500">{t('order_detail.quantity')}: {item.Quantity}</p>
                     <div className="flex items-center justify-between mt-2">
                       <p className="text-primary font-black">{new Intl.NumberFormat('vi-VN').format(item.UnitPrice)}₫</p>
                       
@@ -182,13 +184,13 @@ const OrderDetail = () => {
                           onClick={() => { setSelectedProduct(item); setShowReviewModal(true); }}
                           className="text-xs font-bold text-primary border-2 border-primary px-4 py-1.5 rounded-full hover:bg-primary hover:text-white transition-all"
                         >
-                          Đánh giá ngay
+                          {t('order_detail.rate_now')}
                         </button>
                       )}
                       
                       {order.OrderStatus === 'delivered' && ratedProducts.includes(item.ProductID) && (
                         <span className="text-xs font-bold text-neutral-400 border-2 border-neutral-200 px-4 py-1.5 rounded-full bg-neutral-50 cursor-not-allowed">
-                          Đã đánh giá
+                          {t('order_detail.rated')}
                         </span>
                       )}
                     </div>
@@ -205,9 +207,9 @@ const OrderDetail = () => {
           <div className="bg-white rounded-[32px] p-8 border border-neutral-100 shadow-sm">
             <div className="flex items-center gap-3 mb-6">
               <MapPin className="w-6 h-6 text-primary" />
-              <h3 className="text-xl font-black text-neutral-900">Địa chỉ giao hàng</h3>
+              <h3 className="text-xl font-black text-neutral-900">{t('order_detail.shipping_address')}</h3>
             </div>
-            <p className="font-bold text-neutral-800 mb-1">{userData?.name || 'Người nhận'}</p>
+            <p className="font-bold text-neutral-800 mb-1">{userData?.name || t('notifications.receiver')}</p>
             <p className="text-neutral-500 text-sm leading-relaxed">{order.ShippingAddress}</p>
           </div>
 
@@ -215,38 +217,38 @@ const OrderDetail = () => {
           <div className="bg-neutral-900 rounded-[32px] p-8 text-white shadow-xl shadow-neutral-200">
             <div className="flex items-center gap-3 mb-8">
               <Receipt className="w-6 h-6 text-primary" />
-              <h3 className="text-xl font-black">Chi tiết thanh toán</h3>
+              <h3 className="text-xl font-black">{t('order_detail.payment_details')}</h3>
             </div>
             
             <div className="space-y-4">
               <div className="flex justify-between text-sm text-neutral-400 font-medium">
-                <span>Tạm tính</span>
+                <span>{t('order_detail.subtotal')}</span>
                 <span>{new Intl.NumberFormat('vi-VN').format(order.SubTotalAmount)}₫</span>
               </div>
               
               {order.DiscountAmount > 0 && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-neutral-400">Giảm giá ({order.VoucherCode})</span>
+                  <span className="text-neutral-400">{t('order_detail.discount')} ({order.VoucherCode})</span>
                   <span className="text-success font-bold">-{new Intl.NumberFormat('vi-VN').format(order.DiscountAmount)}₫</span>
                 </div>
               )}
               
               <div className="flex justify-between text-sm text-neutral-400">
-                <span>Phí vận chuyển</span>
-                <span className="text-success font-bold">Miễn phí</span>
+                <span>{t('order_detail.shipping_fee')}</span>
+                <span className="text-success font-bold">{t('cart.free')}</span>
               </div>
 
               <div className="pt-6 border-t border-neutral-800 flex justify-between items-end">
-                <span className="font-bold">Tổng cộng</span>
+                <span className="font-bold">{t('order_detail.total')}</span>
                 <p className="text-2xl font-black text-primary">{new Intl.NumberFormat('vi-VN').format(order.TotalAmount)}₫</p>
               </div>
             </div>
 
             <div className="mt-8 pt-6 border-t border-neutral-800">
               <div className="flex items-center gap-2 text-xs text-neutral-500 mb-2 font-bold uppercase tracking-widest">
-                <CreditCard className="w-3 h-3" /> Phương thức thanh toán
+                <CreditCard className="w-3 h-3" /> {t('order_detail.payment_method')}
               </div>
-              <p className="font-bold text-sm">{order.PaymentMethod === 'Cash' ? 'Thanh toán khi nhận hàng (COD)' : order.PaymentMethod}</p>
+              <p className="font-bold text-sm">{order.PaymentMethod === 'Cash' ? t('order_detail.cod') : order.PaymentMethod}</p>
             </div>
           </div>
         </div>
@@ -261,7 +263,7 @@ const OrderDetail = () => {
             className="bg-white rounded-[40px] w-full max-w-md p-10 relative overflow-hidden"
           >
             <div className="absolute top-0 left-0 w-full h-2 bg-primary"></div>
-            <h3 className="text-2xl font-black text-neutral-900 mb-2">Đánh giá sản phẩm</h3>
+            <h3 className="text-2xl font-black text-neutral-900 mb-2">{t('order_detail.rate_product')}</h3>
             <p className="text-neutral-500 text-sm mb-8">{selectedProduct?.ProductName}</p>
 
             <form onSubmit={handleSubmitReview} className="space-y-6">
@@ -281,7 +283,7 @@ const OrderDetail = () => {
               <textarea
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm này..."
+                placeholder={t('order_detail.share_experience')}
                 className="w-full h-32 rounded-3xl bg-neutral-50 border-none p-6 text-sm focus:ring-2 focus:ring-primary/20 outline-none resize-none"
                 required
               />
@@ -292,13 +294,13 @@ const OrderDetail = () => {
                   onClick={() => setShowReviewModal(false)}
                   className="flex-1 py-4 rounded-full font-bold text-neutral-500 hover:bg-neutral-100 transition-colors"
                 >
-                  Hủy
+                  {t('order_detail.cancel')}
                 </button>
                 <button 
                   type="submit"
                   className="flex-1 py-4 rounded-full font-bold bg-primary text-white shadow-xl shadow-primary/20 hover:scale-105 transition-all"
                 >
-                  Gửi đánh giá
+                  {t('order_detail.submit_review')}
                 </button>
               </div>
             </form>
@@ -310,3 +312,4 @@ const OrderDetail = () => {
 };
 
 export default OrderDetail;
+

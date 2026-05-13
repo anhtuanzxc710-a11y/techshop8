@@ -1,10 +1,12 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { AdminContext } from '../context/AdminContext';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import { assets } from '../assets/assets';
+import { useTranslation } from 'react-i18next';
 
 const AddProduct = () => {
+  const { t } = useTranslation();
   const [productImg, setProductImg] = useState(false);
   const [additionalImages, setAdditionalImages] = useState([]);
   const [name, setName] = useState('');
@@ -44,7 +46,7 @@ const AddProduct = () => {
     try {
       if (!productImg) {
         setIsLoading(false);
-        return toast.error('Image not selected');
+        return toast.error(t('product.image_not_selected'));
       }
 
       const formData = new FormData();
@@ -77,13 +79,13 @@ const AddProduct = () => {
       );
 
       if (data.success) {
-        toast.success(data.message + ' Product added');
+        toast.success(t('product.add_success'));
         setProductImg(false);
         setAdditionalImages([]);
         setName('');
         setBrand('');
         setPrice('');
-        setCategory('Laptop');
+        setCategory(categories.length > 0 ? categories[0].CategoryName : '');
         setDescription('');
         setStock('');
         setSpecifications(JSON.stringify([{ key: '', value: '' }]));
@@ -121,11 +123,11 @@ const AddProduct = () => {
 
   return (
     <form onSubmit={onSubmitHandler} className='m-5 w-full'>
-      <p className='my-3 text-lg font-medium'>Add Product</p>
+      <p className='my-3 text-lg font-medium'>{t('product.add_title')}</p>
       <div className='px-8 py-8 bg-white border rounded w-full max-w-4xl max-h-[80vh] overflow-y-scroll'>
         <div className='flex flex-wrap gap-4 mb-8 text-gray-700'>
           <div className='flex flex-col items-center gap-2'>
-            <p className='text-sm font-medium'>Main Image</p>
+            <p className='text-sm font-medium'>{t('product.main_image')}</p>
             <label htmlFor='product-img'>
               <img
                 className='w-20 h-20 bg-gray-100 rounded-lg cursor-pointer object-cover border-2 border-dashed border-gray-300'
@@ -137,7 +139,7 @@ const AddProduct = () => {
           </div>
 
           <div className='flex flex-col gap-2'>
-            <p className='text-sm font-medium'>Additional Images (Max 5)</p>
+            <p className='text-sm font-medium'>{t('product.additional_images')}</p>
             <div className='flex gap-2 flex-wrap'>
               {additionalImages.map((img, index) => (
                 <div key={index} className='relative'>
@@ -169,28 +171,28 @@ const AddProduct = () => {
 
         <div className='flex flex-col gap-4 text-gray-800'>
           <div className='flex flex-col gap-1'>
-            <p>Product Name</p>
-            <input onChange={(e) => setName(e.target.value)} value={name} className='border rounded px-3 py-2' type="text" placeholder='Name' required />
+            <p>{t('product.name')}</p>
+            <input onChange={(e) => setName(e.target.value)} value={name} className='border rounded px-3 py-2' type="text" placeholder={t('product.name_placeholder')} required />
           </div>
 
           <div className='flex flex-col gap-1'>
-            <p>Brand</p>
-            <input onChange={(e) => setBrand(e.target.value)} value={brand} className='border rounded px-3 py-2' type="text" placeholder='Brand' required />
+            <p>{t('product.brand')}</p>
+            <input onChange={(e) => setBrand(e.target.value)} value={brand} className='border rounded px-3 py-2' type="text" placeholder={t('product.brand_placeholder')} required />
           </div>
 
           <div className='flex flex-col gap-1'>
-            <p>Price</p>
-            <input onChange={(e) => setPrice(e.target.value)} value={price} className='border rounded px-3 py-2' type="number" placeholder='Price' required />
+            <p>{t('product.price')}</p>
+            <input onChange={(e) => setPrice(e.target.value)} value={price} className='border rounded px-3 py-2' type="number" placeholder={t('product.price_placeholder')} required />
           </div>
 
           <div className='flex flex-col gap-1'>
-            <p>Category</p>
+            <p>{t('product.category')}</p>
             <select 
               onChange={(e) => setCategory(e.target.value)} 
               value={category}
               className='border rounded px-3 py-2'
             >
-              <option value="">Select Category</option>
+              <option value="">{t('product.select_category')}</option>
               {categories.map((item) => (
                 <option key={item.CategoryID} value={item.CategoryName}>{item.CategoryName}</option>
               ))}
@@ -198,29 +200,29 @@ const AddProduct = () => {
           </div>
 
           <div className='flex flex-col gap-1'>
-            <p>Stock</p>
-            <input onChange={(e) => setStock(e.target.value)} value={stock} className='border rounded px-3 py-2' type="number" placeholder='Stock' required />
+            <p>{t('product.stock')}</p>
+            <input onChange={(e) => setStock(e.target.value)} value={stock} className='border rounded px-3 py-2' type="number" placeholder={t('product.stock_placeholder')} required />
           </div>
 
           <div>
-            <p className='mt-4 mb-2'>Description</p>
-            <textarea onChange={(e) => setDescription(e.target.value)} value={description} className='w-full px-4 pt-2 border rounded' placeholder='Write about product' rows={5} required />
+            <p className='mt-4 mb-2'>{t('product.description')}</p>
+            <textarea onChange={(e) => setDescription(e.target.value)} value={description} className='w-full px-4 pt-2 border rounded' placeholder={t('product.desc_placeholder')} rows={5} required />
           </div>
 
           <div className='mt-6'>
-            <p className='mb-2'>Specifications</p>
+            <p className='mb-2'>{t('product.specifications')}</p>
             {JSON.parse(specifications).map((spec, index) => (
               <div key={index} className='flex items-center gap-2 mb-2'>
                 <input
                   type='text'
-                  placeholder='Key (e.g., RAM, Storage)'
+                  placeholder={t('product.spec_key_placeholder')}
                   value={spec.key}
                   onChange={(e) => handleSpecificationChange(index, 'key', e.target.value)}
                   className='border rounded px-3 py-2 w-1/3'
                 />
                 <input
                   type='text'
-                  placeholder='Value (e.g., 16GB, 512GB SSD)'
+                  placeholder={t('product.spec_value_placeholder')}
                   value={spec.value}
                   onChange={(e) => handleSpecificationChange(index, 'value', e.target.value)}
                   className='border rounded px-3 py-2 w-1/3'
@@ -237,19 +239,19 @@ const AddProduct = () => {
               type="button"
               onClick={addSpecificationField}
               className='px-3 py-2 mt-2 text-white bg-green-500 rounded'>
-              ➕ Add Specification
+              ➕ {t('product.add_spec')}
             </button>
           </div>
         </div>
 
-        <button type="submit" className='bg-red-100 px-10 py-3 mt-4 text-black rounded-full'>Add Product</button>
+        <button type="submit" className='bg-red-100 px-10 py-3 mt-4 text-black rounded-full'>{t('product.add_title')}</button>
       </div>
 
       {/* Loading Overlay */}
       {isLoading && (
         <div className='fixed top-0 left-0 z-50 w-full h-full bg-black bg-opacity-40 flex items-center justify-center'>
           <div className='px-6 py-4 text-white bg-gray-800 rounded-lg text-lg font-medium shadow-lg'>
-            Processing...
+            {t('common.processing')}
           </div>
         </div>
       )}
@@ -258,3 +260,4 @@ const AddProduct = () => {
 };
 
 export default AddProduct;
+

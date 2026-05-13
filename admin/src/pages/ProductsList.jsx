@@ -4,8 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { assets } from '../assets/assets';
+import { useTranslation } from 'react-i18next';
 
 const ProductsList = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const {
     aToken,
@@ -189,7 +191,7 @@ const ProductsList = () => {
   return (
     <div className="m-5 max-h-[90vh] overflow-y-scroll">
       <div className="flex justify-between items-center mb-5">
-        <h1 className="text-xl font-bold text-gray-800">All Products</h1>
+        <h1 className="text-xl font-bold text-gray-800">{t('products.title')}</h1>
         <button
           onClick={() => setShowAddModal(!showAddModal)}
           className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-bold shadow-md transition-all ${showAddModal
@@ -197,7 +199,7 @@ const ProductsList = () => {
               : 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg'
             }`}
         >
-          {showAddModal ? 'Close' : 'Add'}
+          {showAddModal ? t('products.close') : t('products.add')}
         </button>
       </div>
 
@@ -207,7 +209,7 @@ const ProductsList = () => {
           <div className="p-6 bg-gray-50 border-b">
             <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
               <span className="bg-primary w-2 h-6 rounded-full"></span>
-              Add New Product
+              {t('products.add_new')}
             </h2>
           </div>
 
@@ -216,7 +218,7 @@ const ProductsList = () => {
               {/* Left Column: Images */}
               <div className="space-y-8">
                 <div>
-                  <p className="text-sm font-bold text-gray-700 mb-4">Main Product Image</p>
+                  <p className="text-sm font-bold text-gray-700 mb-4">{t('products.upload_main')}</p>
                   <label htmlFor="product-img-inline" className="cursor-pointer block group">
                     <div className="relative w-full h-64 bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl flex items-center justify-center overflow-hidden group-hover:border-primary group-hover:bg-indigo-50/30 transition-all">
                       {productImg ? (
@@ -226,7 +228,7 @@ const ProductsList = () => {
                           <div className="w-16 h-16 bg-white rounded-full shadow-sm flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
                             <img src={assets.upload_product} className="w-8 opacity-60" alt="" />
                           </div>
-                          <p className="text-sm font-medium text-gray-500">Click to upload main thumbnail</p>
+                          <p className="text-sm font-medium text-gray-500">{t('products.upload_click')}</p>
                           <p className="text-xs text-gray-400 mt-1">PNG, JPG up to 10MB</p>
                         </div>
                       )}
@@ -236,7 +238,7 @@ const ProductsList = () => {
                 </div>
 
                 <div>
-                  <p className="text-sm font-bold text-gray-700 mb-4">Gallery Images (Max 5)</p>
+                  <p className="text-sm font-bold text-gray-700 mb-4">{t('products.upload_gallery')}</p>
                   <div className="flex gap-4 flex-wrap">
                     {additionalImages.map((img, index) => (
                       <div key={index} className="relative w-24 h-24 group">
@@ -251,7 +253,7 @@ const ProductsList = () => {
                     {additionalImages.length < 5 && (
                       <label className="w-24 h-24 bg-white rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-indigo-50/30 transition-all group">
                         <span className="text-3xl text-gray-300 group-hover:text-primary transition-colors">+</span>
-                        <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Add</span>
+                        <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">{t('products.add')}</span>
                         <input
                           type="file" multiple hidden
                           onChange={(e) => {
@@ -268,17 +270,17 @@ const ProductsList = () => {
               {/* Right Column: Information */}
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-700">Product Name</label>
+                  <label className="text-sm font-bold text-gray-700">{t('products.name')}</label>
                   <input onChange={(e) => setName(e.target.value)} value={name} className="w-full border border-gray-200 rounded-xl px-5 py-3 outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all bg-gray-50/30" type="text" placeholder="e.g. MacBook Pro M3 Max" required />
                 </div>
 
                 <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-gray-700">Brand</label>
+                    <label className="text-sm font-bold text-gray-700">{t('products.brand')}</label>
                     <input onChange={(e) => setBrand(e.target.value)} value={brand} className="w-full border border-gray-200 rounded-xl px-5 py-3 outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all bg-gray-50/30" type="text" placeholder="e.g. Apple" required />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-gray-700">Category</label>
+                    <label className="text-sm font-bold text-gray-700">{t('products.category')}</label>
                     <select onChange={(e) => setCategory(e.target.value)} value={category} className="w-full border border-gray-200 rounded-xl px-5 py-3 outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all bg-gray-50/30">
                       {categories.map((item) => (
                         <option key={item.CategoryID} value={item.CategoryName}>{item.CategoryName}</option>
@@ -289,20 +291,20 @@ const ProductsList = () => {
 
                 <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-gray-700">Price (VND)</label>
+                    <label className="text-sm font-bold text-gray-700">{t('products.price')} (VND)</label>
                     <div className="relative">
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">₫</span>
                       <input onChange={(e) => setPrice(e.target.value)} value={price} className="w-full border border-gray-200 rounded-xl pl-10 pr-5 py-3 outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all bg-gray-50/30" type="number" placeholder="0" required />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-gray-700">Stock Units</label>
+                    <label className="text-sm font-bold text-gray-700">{t('products.stock')}</label>
                     <input onChange={(e) => setStock(e.target.value)} value={stock} className="w-full border border-gray-200 rounded-xl px-5 py-3 outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all bg-gray-50/30" type="number" placeholder="0" required />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-700">Product Description</label>
+                  <label className="text-sm font-bold text-gray-700">{t('products.desc')}</label>
                   <textarea onChange={(e) => setDescription(e.target.value)} value={description} className="w-full border border-gray-200 rounded-xl px-5 py-4 outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all bg-gray-50/30 min-h-[140px]" placeholder="Share more details about the product..." required />
                 </div>
               </div>
@@ -313,13 +315,13 @@ const ProductsList = () => {
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-md font-bold text-gray-800 flex items-center gap-2">
                   <span className="bg-green-500 w-2 h-6 rounded-full"></span>
-                  Specifications
+                  {t('products.specs')}
                 </h3>
                 <button
                   type="button" onClick={addSpecificationField}
                   className="text-primary text-sm font-bold hover:bg-indigo-50 px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
                 >
-                  <span>+</span> Add Row
+                  <span>+</span> {t('products.add_row')}
                 </button>
               </div>
 
@@ -350,16 +352,16 @@ const ProductsList = () => {
                 type="button" onClick={() => setShowAddModal(false)}
                 className="px-8 py-3.5 text-gray-500 font-bold hover:bg-gray-100 rounded-xl transition-all"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 type="submit" disabled={isLoading}
                 className="px-12 py-3.5 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-100 hover:shadow-blue-200 hover:bg-blue-700 disabled:opacity-50 transition-all flex items-center gap-3"
               >
                 {isLoading ? (
-                  <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Processing...</>
+                  <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> {t('common.processing')}</>
                 ) : (
-                  'Add'
+                  t('products.add')
                 )}
               </button>
             </div>
@@ -405,7 +407,7 @@ const ProductsList = () => {
 
               <div className="space-y-2 pt-2 border-t border-gray-50">
                 <label className="flex items-center justify-between cursor-pointer group/toggle">
-                  <span className="text-[11px] font-medium text-gray-500 group-hover/toggle:text-gray-700 transition-colors">Available</span>
+                  <span className="text-[11px] font-medium text-gray-500 group-hover/toggle:text-gray-700 transition-colors">{t('products.available')}</span>
                   <div className="relative">
                     <input
                       onChange={() => {
@@ -425,7 +427,7 @@ const ProductsList = () => {
                 </label>
 
                 <label className="flex items-center justify-between cursor-pointer group/toggle">
-                  <span className="text-[11px] font-medium text-gray-500 group-hover/toggle:text-gray-700 transition-colors">Bestseller</span>
+                  <span className="text-[11px] font-medium text-gray-500 group-hover/toggle:text-gray-700 transition-colors">{t('products.bestseller')}</span>
                   <div className="relative">
                     <input
                       onChange={() => {
@@ -455,20 +457,20 @@ const ProductsList = () => {
           <div className="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-sm animate-popIn border border-gray-100">
             <div className="text-center">
               <div className="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl shadow-inner animate-bounce">!</div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Delete Product?</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">{t('products.delete_confirm')}</h3>
               <p className="text-gray-500 mb-8 leading-relaxed">
-                Are you sure you want to permanently remove <br /><span className="text-red-500 font-bold">"{selectedProduct.name}"</span>? This action cannot be undone.
+                {t('products.delete_desc')} <br /><span className="text-red-500 font-bold">"{selectedProduct.name}"</span>? {t('products.no_undo')}
               </p>
             </div>
             <div className="flex gap-4">
               <button
                 onClick={() => setShowDeleteModal(false)}
                 className="flex-1 px-4 py-3.5 text-sm font-bold text-gray-500 bg-gray-100 rounded-2xl hover:bg-gray-200 transition-all"
-              >Cancel</button>
+              >{t('common.cancel')}</button>
               <button
                 onClick={handleDelete}
                 className="flex-1 px-4 py-3.5 text-sm font-bold text-white bg-red-500 rounded-2xl hover:bg-red-600 shadow-lg shadow-red-200 transition-all active:scale-95"
-              >Yes, Delete</button>
+              >{t('common.yes_delete')}</button>
             </div>
           </div>
         </div>
@@ -478,3 +480,4 @@ const ProductsList = () => {
 };
 
 export default ProductsList;
+

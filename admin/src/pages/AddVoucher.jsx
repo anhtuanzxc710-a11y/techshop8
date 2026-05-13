@@ -4,8 +4,10 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Tag, Calendar, DollarSign, Percent, Info, Save, ArrowLeft } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const AddVoucher = () => {
+    const { t } = useTranslation();
     const { aToken, backendurl } = useContext(AdminContext);
     const navigate = useNavigate();
     const location = useLocation();
@@ -64,7 +66,7 @@ const AddVoucher = () => {
                 className='flex items-center gap-2 text-gray-500 hover:text-blue-600 mb-6 transition-colors'
             >
                 <ArrowLeft size={20} />
-                <span className='font-medium'>Quay lại danh sách</span>
+                <span className='font-medium'>{t('add_voucher.back')}</span>
             </button>
 
             <form onSubmit={onSubmitHandler} className='bg-white rounded-[32px] p-8 shadow-sm border border-gray-100'>
@@ -73,8 +75,8 @@ const AddVoucher = () => {
                         <Tag size={24} />
                     </div>
                     <div>
-                        <h2 className='text-2xl font-black text-gray-900'>{isEdit ? 'Chỉnh sửa Voucher' : 'Tạo Voucher mới'}</h2>
-                        <p className='text-sm text-gray-400'>Thiết lập các chương trình khuyến mãi cho khách hàng</p>
+                        <h2 className='text-2xl font-black text-gray-900'>{isEdit ? t('add_voucher.edit_title') : t('add_voucher.add_title')}</h2>
+                        <p className='text-sm text-gray-400'>{t('add_voucher.subtitle')}</p>
                     </div>
                 </div>
 
@@ -82,7 +84,7 @@ const AddVoucher = () => {
                     {/* Left Column */}
                     <div className='space-y-6'>
                         <div>
-                            <label className='block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1'>Mã Voucher</label>
+                            <label className='block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1'>{t('add_voucher.code')}</label>
                             <input
                                 type="text"
                                 value={code}
@@ -95,28 +97,28 @@ const AddVoucher = () => {
                         </div>
 
                         <div>
-                            <label className='block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1'>Loại giảm giá</label>
+                            <label className='block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1'>{t('add_voucher.type')}</label>
                             <div className='grid grid-cols-2 gap-3'>
                                 <button
                                     type="button"
                                     onClick={() => setDiscountType('percentage')}
                                     className={`flex items-center justify-center gap-2 py-3 rounded-2xl border transition-all ${discountType === 'percentage' ? 'bg-blue-50 border-blue-500 text-blue-600 font-bold shadow-sm' : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300'}`}
                                 >
-                                    <Percent size={18} /> Phần trăm
+                                    <Percent size={18} /> {t('vouchers.percentage')}
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => setDiscountType('fixed')}
                                     className={`flex items-center justify-center gap-2 py-3 rounded-2xl border transition-all ${discountType === 'fixed' ? 'bg-blue-50 border-blue-500 text-blue-600 font-bold shadow-sm' : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300'}`}
                                 >
-                                    <DollarSign size={18} /> Số tiền cố định
+                                    <DollarSign size={18} /> {t('vouchers.fixed')}
                                 </button>
                             </div>
                         </div>
 
                         <div className='grid grid-cols-2 gap-4'>
                             <div>
-                                <label className='block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1'>Giá trị giảm</label>
+                                <label className='block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1'>{t('add_voucher.value')}</label>
                                 <div className='relative'>
                                     <input
                                         type="number"
@@ -132,7 +134,7 @@ const AddVoucher = () => {
                                 </div>
                             </div>
                             <div>
-                                <label className='block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1'>Giới hạn sử dụng</label>
+                                <label className='block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1'>{t('add_voucher.limit')}</label>
                                 <input
                                     type="number"
                                     value={usageLimit}
@@ -144,12 +146,12 @@ const AddVoucher = () => {
                         </div>
 
                         <div>
-                            <label className='block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1'>Mô tả Voucher</label>
+                            <label className='block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1'>{t('add_voucher.desc')}</label>
                             <textarea
                                 rows="3"
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
-                                placeholder="Ghi chú về mã giảm giá này..."
+                                placeholder={t('add_voucher.desc_placeholder')}
                                 className='w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all font-medium resize-none'
                             />
                         </div>
@@ -158,7 +160,7 @@ const AddVoucher = () => {
                     {/* Right Column */}
                     <div className='space-y-6'>
                         <div>
-                            <label className='block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1'>Giá trị đơn tối thiểu (đ)</label>
+                            <label className='block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1'>{t('add_voucher.min_amount')}</label>
                             <input
                                 type="number"
                                 value={minOrderAmount}
@@ -169,7 +171,7 @@ const AddVoucher = () => {
                         </div>
 
                         <div>
-                            <label className='block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1'>Giảm tối đa (đ)</label>
+                            <label className='block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1'>{t('add_voucher.max_amount')}</label>
                             <input
                                 type="number"
                                 value={maxDiscountAmount}
@@ -177,11 +179,11 @@ const AddVoucher = () => {
                                 placeholder="Bỏ trống nếu không giới hạn"
                                 className='w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all font-bold'
                             />
-                            <p className='text-[10px] text-gray-400 mt-2 flex items-center gap-1'><Info size={12} /> Chỉ áp dụng cho loại giảm giá theo %</p>
+                            <p className='text-[10px] text-gray-400 mt-2 flex items-center gap-1'><Info size={12} /> {t('add_voucher.max_amount_hint')}</p>
                         </div>
 
                         <div>
-                            <label className='block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1'>Ngày hết hạn</label>
+                            <label className='block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1'>{t('add_voucher.expiry')}</label>
                             <div className='relative'>
                                 <input
                                     type="date"
@@ -201,7 +203,7 @@ const AddVoucher = () => {
                                 className='w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-lg shadow-lg shadow-blue-200 hover:bg-blue-700 hover:shadow-xl transition-all flex items-center justify-center gap-3 disabled:opacity-50'
                             >
                                 <Save size={20} />
-                                {isLoading ? 'Đang xử lý...' : (isEdit ? 'Cập nhật Voucher' : 'Kích hoạt Voucher')}
+                                {isLoading ? t('common.processing') : (isEdit ? t('add_voucher.update_btn') : t('add_voucher.add_btn'))}
                             </button>
                         </div>
                     </div>
@@ -212,3 +214,4 @@ const AddVoucher = () => {
 };
 
 export default AddVoucher;
+

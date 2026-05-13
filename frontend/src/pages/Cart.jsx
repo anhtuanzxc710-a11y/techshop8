@@ -5,8 +5,10 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { CheckCircle2, XCircle, Truck, Trash2, CreditCard, Calendar, ShoppingBag, ChevronRight, Package, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 const Cart = () => {
+  const { t } = useTranslation();
   const { backendurl, token } = useContext(AppContext);
   const [cart, setCart] = useState([]);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -108,7 +110,7 @@ const Cart = () => {
     <div className="container-main py-10 lg:py-16">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
         <div>
-          <h1 className="text-3xl font-black text-neutral-900 mb-2">Lịch sử đơn hàng</h1>
+          <h1 className="text-3xl font-black text-neutral-900 mb-2">{t('order.history')}</h1>
           <p className="text-neutral-500 font-medium">Quản lý và theo dõi các thiết bị bạn đã đặt mua.</p>
         </div>
         <button 
@@ -162,7 +164,7 @@ const Cart = () => {
                     </p>
                     <div className="flex items-center gap-2">
                       {/* Đã gỡ bỏ nút thanh toán ngoài lịch sử đơn hàng theo yêu cầu */}
-                      {item.paymentStatus && (
+                      {item.paymentStatus && item.status !== 'delivered' && (
                         <div className="px-3 py-1.5 bg-success-50 text-success text-[10px] font-black rounded-lg border border-success-100 flex items-center gap-1">
                           <CheckCircle2 className="w-3 h-3" /> ĐÃ THANH TOÁN
                         </div>

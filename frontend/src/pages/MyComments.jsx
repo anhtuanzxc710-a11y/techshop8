@@ -2,8 +2,10 @@ import React, { useContext, useEffect, useState } from 'react';
 import { AppContext } from '../context/AppContext';
 import { MessageSquare, Reply, ShoppingBag, Calendar } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 const MyComments = () => {
+  const { t } = useTranslation();
   const { token, comments, replies, getComments, getRepliesByUser } = useContext(AppContext);
   const [loading, setLoading] = useState(true);
 
@@ -22,7 +24,7 @@ const MyComments = () => {
     return (
       <div className="container-main py-20 flex flex-col items-center justify-center">
         <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p className="text-neutral-500 font-medium">Đang tải bình luận của bạn...</p>
+        <p className="text-neutral-500 font-medium">{t('comments.loading')}</p>
       </div>
     );
   }
@@ -30,8 +32,8 @@ const MyComments = () => {
   return (
     <div className="container-main py-10 lg:py-16">
       <div className="text-center max-w-2xl mx-auto mb-12">
-        <h2 className="text-3xl font-black text-neutral-900 mb-2 uppercase tracking-tight">Phản hồi của bạn</h2>
-        <p className="text-neutral-500 font-medium">Xem lại tất cả các đánh giá và thảo luận của bạn về các sản phẩm.</p>
+        <h2 className="text-3xl font-black text-neutral-900 mb-2 uppercase tracking-tight">{t('comments.title')}</h2>
+        <p className="text-neutral-500 font-medium">{t('comments.subtitle')}</p>
       </div>
 
       {comments.length === 0 ? (
@@ -39,8 +41,8 @@ const MyComments = () => {
           <div className="w-20 h-20 bg-neutral-50 rounded-full flex items-center justify-center mx-auto mb-6">
             <MessageSquare className="w-10 h-10 text-neutral-300" />
           </div>
-          <h2 className="text-xl font-black text-neutral-900 mb-2">Bạn chưa có bình luận nào</h2>
-          <p className="text-neutral-500 mb-8 max-w-xs mx-auto">Hãy chia sẻ cảm nghĩ của bạn về các sản phẩm đã trải nghiệm nhé.</p>
+          <h2 className="text-xl font-black text-neutral-900 mb-2">{t('comments.empty')}</h2>
+          <p className="text-neutral-500 mb-8 max-w-xs mx-auto">{t('comments.empty_desc')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -64,7 +66,7 @@ const MyComments = () => {
                     />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-0.5">Sản phẩm</p>
+                    <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-0.5">{t('comments.product_label')}</p>
                     <h3 className="text-sm font-bold text-neutral-900 truncate">{comment.productData.name}</h3>
                   </div>
                 </div>
@@ -79,7 +81,7 @@ const MyComments = () => {
                 {commentReplies.length > 0 && (
                   <div className="space-y-3 mt-auto">
                     <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest flex items-center gap-1.5 ml-1">
-                      <Reply className="w-3 h-3" /> Phản hồi từ Admin
+                      <Reply className="w-3 h-3" /> {t('comments.admin_reply')}
                     </p>
                     {commentReplies.map((reply) => (
                       <div
@@ -101,4 +103,5 @@ const MyComments = () => {
 };
 
 export default MyComments;
+
 

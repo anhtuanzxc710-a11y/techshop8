@@ -2,18 +2,20 @@ import React, { useContext } from 'react'
 import { NavLink } from 'react-router-dom'
 import Search from './Search'
 import { AdminContext } from '../context/AdminContext'
+import { useTranslation } from 'react-i18next'
 
 const Sidebar = ({ isVisible, setSidebarVisible }) => {
+  const { t } = useTranslation();
   const { search, setSearch } = useContext(AdminContext)
   const menuItems = [
-    { path: '/', label: 'Dashboard' },
-    { path: '/categories', label: 'Categories' },
-    { path: '/users', label: 'Users' },
-    { path: '/all-carts', label: 'Orders' },
-    { path: '/products-list', label: 'List Products' },
-    { path: '/comments-list', label: 'List Comments' },
-    { path: '/notifications', label: 'Notifications' },
-    { path: '/vouchers', label: 'Manage Vouchers' },
+    { path: '/', label: t('sidebar.dashboard') },
+    { path: '/categories', label: t('sidebar.categories') },
+    { path: '/users', label: t('sidebar.users') },
+    { path: '/all-carts', label: t('sidebar.orders') },
+    { path: '/products-list', label: t('sidebar.list_products') },
+    { path: '/comments-list', label: t('sidebar.list_comments') },
+    { path: '/notifications', label: t('sidebar.notifications') },
+    { path: '/vouchers', label: t('sidebar.manage_vouchers') },
   ]
 
   return (
@@ -50,4 +52,4 @@ const Sidebar = ({ isVisible, setSidebarVisible }) => {
   )
 }
 
-export default Sidebar;
+export default Sidebar;

@@ -1,5 +1,6 @@
 import React, { useContext, useEffect } from 'react'
 import { AdminContext } from '../context/AdminContext'
+import { useTranslation } from 'react-i18next'
 import {
   BarChart,
   Bar,
@@ -15,6 +16,7 @@ import {
 import { DollarSign, ShoppingBag, Users, MessageSquare, TrendingUp } from 'lucide-react'
 
 const Dashboard = () => {
+  const { t } = useTranslation();
   const { aToken, dashData, getDashData } = useContext(AdminContext)
 
   useEffect(() => {
@@ -26,14 +28,14 @@ const Dashboard = () => {
   if (!dashData) return null;
 
   const stats = [
-    { label: 'Total Revenue', value: `${new Intl.NumberFormat('vi-VN').format(dashData.totalRevenue)}₫`, icon: DollarSign, color: 'bg-emerald-500' },
-    { label: 'Total Orders', value: dashData.totalOrders || 0, icon: ShoppingBag, color: 'bg-indigo-500' },
-    { label: 'Processed Orders', value: dashData.processedOrders || 0, icon: ShoppingBag, color: 'bg-blue-500' },
-    { label: 'Unprocessed Orders', value: dashData.unprocessedOrders || 0, icon: ShoppingBag, color: 'bg-orange-500' },
-    { label: 'Total Users', value: dashData.users?.length || 0, icon: Users, color: 'bg-amber-500' },
-    { label: 'Comments', value: dashData.qcomments || 0, icon: MessageSquare, color: 'bg-rose-500' },
-    { label: 'Low Stock Alerts', value: dashData.lowStockCount || 0, icon: TrendingUp, color: 'bg-red-500' },
-    { label: 'Active Vouchers', value: `${dashData.voucherStats?.activeVouchers || 0} / ${dashData.voucherStats?.totalVouchers || 0}`, icon: DollarSign, color: 'bg-teal-500' },
+    { label: t('dashboard.total_revenue'), value: `${new Intl.NumberFormat('vi-VN').format(dashData.totalRevenue)}₫`, icon: DollarSign, color: 'bg-emerald-500' },
+    { label: t('dashboard.total_orders'), value: dashData.totalOrders || 0, icon: ShoppingBag, color: 'bg-indigo-500' },
+    { label: t('dashboard.processed'), value: dashData.processedOrders || 0, icon: ShoppingBag, color: 'bg-blue-500' },
+    { label: t('dashboard.unprocessed'), value: dashData.unprocessedOrders || 0, icon: ShoppingBag, color: 'bg-orange-500' },
+    { label: t('dashboard.total_users'), value: dashData.users?.length || 0, icon: Users, color: 'bg-amber-500' },
+    { label: t('dashboard.comments'), value: dashData.qcomments || 0, icon: MessageSquare, color: 'bg-rose-500' },
+    { label: t('dashboard.low_stock'), value: dashData.lowStockCount || 0, icon: TrendingUp, color: 'bg-red-500' },
+    { label: t('dashboard.active_vouchers'), value: `${dashData.voucherStats?.activeVouchers || 0} / ${dashData.voucherStats?.totalVouchers || 0}`, icon: DollarSign, color: 'bg-teal-500' },
   ]
 
   // Monthly Revenue Chart Data
@@ -46,8 +48,8 @@ const Dashboard = () => {
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-800">Dashboard Overview</h1>
-        <p className="text-gray-500">Real-time statistics and revenue reports.</p>
+        <h1 className="text-2xl font-bold text-gray-800">{t('dashboard.title')}</h1>
+        <p className="text-gray-500">{t('dashboard.subtitle')}</p>
       </div>
 
       {/* Stats Cards */}
@@ -69,7 +71,7 @@ const Dashboard = () => {
         {/* Monthly Revenue Chart */}
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
           <h2 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-indigo-500" /> Monthly Revenue
+            <TrendingUp className="w-5 h-5 text-indigo-500" /> {t('dashboard.monthly_revenue')}
           </h2>
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -89,7 +91,7 @@ const Dashboard = () => {
 
         {/* Top Selling Products */}
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-          <h2 className="text-lg font-bold text-gray-800 mb-6">Top Selling Products</h2>
+          <h2 className="text-lg font-bold text-gray-800 mb-6">{t('dashboard.top_selling')}</h2>
           <div className="space-y-4">
             {dashData.topSellingProducts.map((product, index) => (
               <div key={index} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-xl transition-colors">
@@ -101,7 +103,7 @@ const Dashboard = () => {
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-bold text-gray-800">{product.totalSold}</p>
-                  <p className="text-[10px] text-gray-500 font-medium uppercase tracking-wider">Units sold</p>
+                  <p className="text-[10px] text-gray-500 font-medium uppercase tracking-wider">{t('dashboard.units_sold')}</p>
                 </div>
               </div>
             ))}
@@ -112,7 +114,7 @@ const Dashboard = () => {
       {/* Latest users */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-50">
-          <h3 className="font-bold text-gray-800">Latest Registered Users</h3>
+          <h3 className="font-bold text-gray-800">{t('dashboard.latest_users')}</h3>
         </div>
         <div className="divide-y divide-gray-50">
           {dashData.users.slice(0, 5).map((user, index) => (
@@ -131,3 +133,4 @@ const Dashboard = () => {
 }
 
 export default Dashboard
+

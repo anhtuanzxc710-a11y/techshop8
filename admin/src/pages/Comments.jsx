@@ -1,7 +1,9 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { AdminContext } from '../context/AdminContext';
+import { useTranslation } from 'react-i18next';
 
 const Comments = () => {
+  const { t } = useTranslation();
   const {
     aToken,
     comments,
@@ -68,15 +70,15 @@ const Comments = () => {
 
   return (
     <div className="w-full max-w-6xl m-4 sm:m-8">
-      <p className="mb-4 text-lg font-semibold">All Comments</p>
+      <p className="mb-4 text-lg font-semibold">{t('comments.title')}</p>
 
       <div className="bg-white border rounded shadow-sm text-sm max-h-[80vh] min-h-[60vh] overflow-y-scroll">
         {/* Header Row - hidden on mobile */}
         <div className="hidden sm:grid grid-cols-[0.5fr_2fr_3fr_1fr] py-3 px-6 border-b bg-gray-100 font-semibold">
           <p>#</p>
-          <p>User</p>
-          <p>Comment</p>
-          <p>Actions</p>
+          <p>{t('comments.user')}</p>
+          <p>{t('comments.comment')}</p>
+          <p>{t('comments.actions')}</p>
         </div>
 
         {comments.map((comment, index) => (
@@ -111,7 +113,7 @@ const Comments = () => {
                 onClick={() => handleReplyClick(comment)}
                 className="px-3 py-1 bg-blue-600 text-white rounded text-sm"
               >
-                Reply
+                {t('comments.reply')}
               </button>
               <button
                 onClick={() =>
@@ -122,8 +124,8 @@ const Comments = () => {
                 className="text-sm text-gray-600"
               >
                 {commentWithRepliesShown?._id === comment._id
-                  ? 'Hide Replies'
-                  : 'Show Replies'}
+                  ? t('comments.hide_replies')
+                  : t('comments.show_replies')}
               </button>
             </div>
 
@@ -135,20 +137,20 @@ const Comments = () => {
                   rows="3"
                   value={replyText}
                   onChange={(e) => setReplyText(e.target.value)}
-                  placeholder="Write your reply..."
+                  placeholder={t('comments.write_reply')}
                 />
                 <div className="flex justify-end mt-2 gap-2">
                   <button
                     onClick={() => setCommentBeingReplied(null)}
                     className="px-4 py-2 bg-gray-300 text-gray-800 rounded"
                   >
-                    Cancel
+                    {t('common.cancel')}
                   </button>
                   <button
                     onClick={submitReply}
                     className="px-4 py-2 bg-green-600 text-white rounded"
                   >
-                    Send Reply
+                    {t('comments.send_reply')}
                   </button>
                 </div>
               </div>
@@ -165,7 +167,7 @@ const Comments = () => {
                     >
                       <div className="flex justify-between items-center">
                         <p className="text-gray-700">
-                          <span className="font-medium">Admin:</span> {reply.text}
+                          <span className="font-medium">{t('comments.admin')}:</span> {reply.text}
                         </p>
                         <div className="flex gap-2">
                           <button
@@ -175,13 +177,13 @@ const Comments = () => {
                             }}
                             className="text-blue-600"
                           >
-                            Edit
+                            {t('common.edit')}
                           </button>
                           <button
                             onClick={() => handleDeleteReply(reply._id)}
                             className="text-red-600"
                           >
-                            Delete
+                            {t('common.delete')}
                           </button>
                         </div>
                       </div>
@@ -201,14 +203,14 @@ const Comments = () => {
                             }
                             className="mt-2 px-4 py-2 bg-green-600 text-white rounded"
                           >
-                            Save
+                            {t('common.save')}
                           </button>
                         </div>
                       )}
                     </div>
                   ))
                 ) : (
-                  <p className="text-gray-500 text-sm">No replies yet.</p>
+                  <p className="text-gray-500 text-sm">{t('comments.no_replies')}</p>
                 )}
               </div>
             )}
@@ -219,4 +221,4 @@ const Comments = () => {
   );
 };
 
-export default Comments;
+export default Comments;

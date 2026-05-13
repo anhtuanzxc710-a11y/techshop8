@@ -5,8 +5,10 @@ import { AppContext } from '../context/AppContext';
 import ProductCard from './ProductCard';
 import SectionHeader from './SectionHeader';
 import { SkeletonGrid } from './SkeletonCard';
+import { useTranslation } from 'react-i18next';
 
 const BestSeller = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { backendurl, search, products } = useContext(AppContext);
   const [bestSellingLaptops, setBestSellingLaptops] = useState([]);
@@ -39,7 +41,7 @@ const BestSeller = () => {
   return (
     <section className="section-sm">
       <SectionHeader 
-        title="Laptop khuyến mãi tốt nhất" 
+        title={"Laptop " + t('common.bestseller')} 
         subtitle="Tổng hợp các dòng Laptop hiệu năng cao với mức giá ưu đãi"
         linkTo="/products"
       />

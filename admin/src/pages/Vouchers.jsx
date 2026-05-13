@@ -5,8 +5,10 @@ import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { Tag, Trash2, Edit3, Plus, Search, Calendar, ChevronRight, Filter } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 const Vouchers = () => {
+    const { t, i18n } = useTranslation();
     const { aToken, backendurl } = useContext(AdminContext);
     const [vouchers, setVouchers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -30,11 +32,11 @@ const Vouchers = () => {
     };
 
     const removeVoucher = async (id) => {
-        if (!window.confirm("Bạn có chắc chắn muốn xóa voucher này không?")) return;
+        if (!window.confirm(t('vouchers.delete_confirm'))) return;
         try {
             const { data } = await axios.post(backendurl + '/api/voucher/remove', { id }, { headers: { aToken } });
             if (data.success) {
-                toast.success("Đã xóa voucher");
+                toast.success(t('vouchers.delete_success'));
                 fetchVouchers();
             } else {
                 toast.error(data.message);
@@ -56,14 +58,14 @@ const Vouchers = () => {
         <div className='m-5 w-full'>
             <div className='flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10'>
                 <div>
-                    <h1 className='text-3xl font-black text-gray-900 mb-2'>Quản lý Voucher</h1>
-                    <p className='text-gray-500 font-medium'>Tạo và quản lý các mã giảm giá cho cửa hàng của bạn.</p>
+                    <h1 className='text-3xl font-black text-gray-900 mb-2'>{t('vouchers.title')}</h1>
+                    <p className='text-gray-500 font-medium'>{t('vouchers.subtitle')}</p>
                 </div>
                 <button 
                     onClick={() => navigate('/add-voucher')}
                     className='bg-blue-600 text-white px-8 py-4 rounded-2xl font-black shadow-lg shadow-blue-200 hover:bg-blue-700 hover:scale-105 transition-all flex items-center gap-3'
                 >
-                    <Plus size={20} /> Tạo mã mới
+                    <Plus size={20} /> {t('vouchers.create_new')}
                 </button>
             </div>
 
@@ -73,7 +75,7 @@ const Vouchers = () => {
                     <Search className='absolute left-4 top-1/2 -translate-y-1/2 text-gray-400' size={18} />
                     <input
                         type="text"
-                        placeholder="Tìm kiếm theo mã voucher..."
+                        placeholder={t('vouchers.search_placeholder')}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className='w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all text-sm font-bold'
@@ -81,14 +83,14 @@ const Vouchers = () => {
                 </div>
                 <div className='flex items-center gap-2 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-500 text-sm font-bold'>
                     <Filter size={16} />
-                    <span>Tất cả trạng thái</span>
+                    <span>{t('vouchers.all_status')}</span>
                 </div>
             </div>
 
             {loading ? (
                 <div className='py-20 text-center'>
                     <div className='animate-spin w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4'></div>
-                    <p className='text-gray-400 font-bold'>Đang tải danh sách voucher...</p>
+                    <p className='text-gray-400 font-bold'>{t('vouchers.loading')}</p>
                 </div>
             ) : (
                 <div className='grid grid-cols-1 xl:grid-cols-2 gap-6'>
@@ -105,7 +107,7 @@ const Vouchers = () => {
                                     {/* Icon / Left Side */}
                                     <div className='w-24 h-24 bg-blue-50 rounded-2xl flex flex-col items-center justify-center text-blue-600 flex-shrink-0 border border-blue-100'>
                                         <Tag size={32} />
-                                        <span className='text-[10px] font-black mt-1 uppercase'>{item.discountType === 'fixed' ? 'Số tiền' : 'Phần trăm'}</span>
+                                        <span className='text-[10px] font-black mt-1 uppercase'>{item.discountType === 'fixed' ? t('vouchers.fixed') : t('vouchers.percentage')}</span>
                                     </div>
 
                                     {/* Content Area */}
@@ -113,7 +115,7 @@ const Vouchers = () => {
                                         <div className='flex items-start justify-between mb-2'>
                                             <div>
                                                 <h3 className='text-xl font-black text-gray-900 tracking-wider'>{item.code}</h3>
-                                                <p className='text-sm text-gray-400 font-medium line-clamp-1'>{item.description || 'Không có mô tả'}</p>
+                                                <p className='text-sm text-gray-400 font-medium line-clamp-1'>{item.description || t('vouchers.no_desc')}</p>
                                             </div>
                                             <div className='text-right'>
                                                 <span className='text-2xl font-black text-blue-600'>
@@ -124,14 +126,14 @@ const Vouchers = () => {
 
                                         <div className='grid grid-cols-2 gap-4 mt-4 py-4 border-t border-gray-50'>
                                             <div className='space-y-1'>
-                                                <p className='text-[10px] font-bold text-gray-400 uppercase tracking-widest'>Đơn tối thiểu</p>
+                                                <p className='text-[10px] font-bold text-gray-400 uppercase tracking-widest'>{t('vouchers.min_order')}</p>
                                                 <p className='text-sm font-bold text-gray-700'>{item.minOrderValue.toLocaleString()}₫</p>
                                             </div>
                                             <div className='space-y-1'>
-                                                <p className='text-[10px] font-bold text-gray-400 uppercase tracking-widest'>Ngày hết hạn</p>
+                                                <p className='text-[10px] font-bold text-gray-400 uppercase tracking-widest'>{t('vouchers.expiration')}</p>
                                                 <p className='text-sm font-bold text-gray-700 flex items-center gap-1'>
                                                     <Calendar size={14} className='text-blue-500' />
-                                                    {new Date(item.expirationDate).toLocaleDateString('vi-VN')}
+                                                    {new Date(item.expirationDate).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}
                                                 </p>
                                             </div>
                                         </div>
@@ -145,12 +147,12 @@ const Vouchers = () => {
                                                             style={{ width: `${Math.min((item.usedCount / item.usageLimit) * 100, 100)}%` }}
                                                         ></div>
                                                     </div>
-                                                    <p className='text-[10px] font-bold text-gray-400'>Đã dùng: {item.usedCount}/{item.usageLimit}</p>
+                                                    <p className='text-[10px] font-bold text-gray-400'>{t('vouchers.used')}: {item.usedCount}/{item.usageLimit}</p>
                                                 </div>
                                                 {item.isActive ? (
-                                                    <span className='px-2 py-1 bg-green-50 text-green-600 text-[10px] font-black rounded-lg border border-green-100 uppercase'>Đang chạy</span>
+                                                    <span className='px-2 py-1 bg-green-50 text-green-600 text-[10px] font-black rounded-lg border border-green-100 uppercase'>{t('vouchers.running')}</span>
                                                 ) : (
-                                                    <span className='px-2 py-1 bg-red-50 text-red-600 text-[10px] font-black rounded-lg border border-red-100 uppercase'>Dừng</span>
+                                                    <span className='px-2 py-1 bg-red-50 text-red-600 text-[10px] font-black rounded-lg border border-red-100 uppercase'>{t('vouchers.stopped')}</span>
                                                 )}
                                             </div>
 
@@ -182,8 +184,8 @@ const Vouchers = () => {
                     <div className='w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6'>
                         <Tag className='w-10 h-10 text-gray-200' />
                     </div>
-                    <h2 className='text-xl font-black text-gray-900 mb-2'>Không tìm thấy voucher nào</h2>
-                    <p className='text-gray-400 mb-8 max-w-xs mx-auto'>Thử thay đổi từ khóa tìm kiếm hoặc tạo một mã giảm giá mới.</p>
+                    <h2 className='text-xl font-black text-gray-900 mb-2'>{t('vouchers.not_found')}</h2>
+                    <p className='text-gray-400 mb-8 max-w-xs mx-auto'>{t('vouchers.not_found_desc')}</p>
                 </div>
             )}
         </div>
@@ -191,3 +193,4 @@ const Vouchers = () => {
 };
 
 export default Vouchers;
+

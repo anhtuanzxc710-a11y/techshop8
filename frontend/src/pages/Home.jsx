@@ -5,28 +5,30 @@ import FamousBranch from '../components/FamousBranch';
 import PopularProducts from '../components/PopularProducts';
 import BestSeller from '../components/BestSeller';
 import { Truck, ShieldCheck, Headphones, RotateCcw } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const Home = () => {
+  const { t } = useTranslation();
   const trustBadges = [
     {
       icon: <Truck className="w-8 h-8 text-primary" />,
-      title: "Giao hàng nhanh",
-      description: "Miễn phí đơn từ 500K"
+      title: t('home.shipping_title'),
+      description: t('home.shipping_desc')
     },
     {
       icon: <ShieldCheck className="w-8 h-8 text-primary" />,
-      title: "Bảo hành chính hãng",
-      description: "Cam kết 100% chính hãng"
+      title: t('home.warranty_title'),
+      description: t('home.warranty_desc')
     },
     {
       icon: <RotateCcw className="w-8 h-8 text-primary" />,
-      title: "Đổi trả dễ dàng",
-      description: "Trong vòng 30 ngày"
+      title: t('home.return_title'),
+      description: t('home.return_desc')
     },
     {
       icon: <Headphones className="w-8 h-8 text-primary" />,
-      title: "Hỗ trợ 24/7",
-      description: "Tận tâm & chuyên nghiệp"
+      title: t('home.support_title'),
+      description: t('home.support_desc')
     }
   ];
 
@@ -59,9 +61,9 @@ const Home = () => {
         <div className="absolute inset-0 flex items-center px-8 sm:px-16 z-20">
           <div className="max-w-md">
             <span className="badge bg-error text-white mb-4">Limited Offer</span>
-            <h3 className="text-2xl sm:text-4xl font-black text-white mb-2 leading-tight">Săn Sale Công Nghệ</h3>
-            <p className="text-neutral-300 text-sm mb-6">Giảm tới 50% cho các dòng Laptop Gaming trong tuần lễ khai trương.</p>
-            <button className="btn-primary rounded-full">Xem ngay</button>
+            <h3 className="text-2xl sm:text-4xl font-black text-white mb-2 leading-tight">{t('home.sale_title')}</h3>
+            <p className="text-neutral-300 text-sm mb-6">{t('home.sale_desc')}</p>
+            <button className="btn-primary rounded-full">{t('home.view_now')}</button>
           </div>
         </div>
         <img

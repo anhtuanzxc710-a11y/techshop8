@@ -5,8 +5,10 @@ import { AppContext } from '../context/AppContext';
 import ProductCard from './ProductCard';
 import SectionHeader from './SectionHeader';
 import { SkeletonGrid } from './SkeletonCard';
+import { useTranslation } from 'react-i18next';
 
 const PopularProducts = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { backendurl, search, products } = useContext(AppContext);
   const [appleProducts, setAppleProducts] = useState([]);
@@ -40,7 +42,7 @@ const PopularProducts = () => {
   return (
     <section className="section-sm">
       <SectionHeader 
-        title="Sản phẩm Apple nổi bật" 
+        title={t('common.popular') + " Apple"} 
         subtitle="Hệ sinh thái Apple chính hãng với chính sách bảo hành tốt nhất"
         linkTo="/products"
       />

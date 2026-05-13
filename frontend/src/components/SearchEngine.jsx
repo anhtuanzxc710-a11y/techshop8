@@ -1,9 +1,11 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { AppContext } from '../context/AppContext';
 import { useNavigate } from 'react-router-dom';
-import { FiSearch } from 'react-icons/fi'; // Magnifying glass icon
+import { FiSearch } from 'react-icons/fi';
+import { useTranslation } from 'react-i18next';
 
 const SearchEngine = ({ search, setSearch }) => {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState(search || '');
   const { backendurl, token } = useContext(AppContext);
   const navigate = useNavigate();
@@ -27,7 +29,7 @@ const SearchEngine = ({ search, setSearch }) => {
         type="search"
         name="search"
         id="search"
-        placeholder="Search for anything"
+        placeholder={t('common.search_placeholder')}
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value.trimStart())}
         className="flex-grow px-2 py-2 text-gray-800 bg-transparent border-none outline-none"

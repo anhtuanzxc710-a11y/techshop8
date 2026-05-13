@@ -4,8 +4,10 @@ import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { AdminContext } from '../context/AdminContext';
+import { useTranslation } from 'react-i18next';
 
 const UpdateProduct = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { backendurl, aToken } = useContext(AdminContext);
   const location = useLocation();
@@ -138,27 +140,27 @@ const UpdateProduct = () => {
       await axios.post(`${backendurl}/api/admin/update-product`, data, {
         headers: { aToken },
       });
-      toast.success('Product updated successfully!');
+      toast.success(t('product.update_success'));
       navigate('/products-list');
     } catch (err) {
       console.error(err);
-      toast.error(err.message || 'Failed to update product');
+      toast.error(err.message || t('product.update_failed'));
     }
   };
 
-  if (loading) return <div className="text-center mt-10">Loading product data...</div>;
+  if (loading) return <div className="text-center mt-10">{t('product.loading_data')}</div>;
 
   return (
     <div className="max-w-3xl mx-auto p-6 bg-white rounded-xl shadow-md mt-10 w-full">
-      <h2 className="text-2xl font-bold mb-4 text-center">Update Product</h2>
+      <h2 className="text-2xl font-bold mb-4 text-center">{t('product.update_title')}</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
 
         {[
-          { label: 'Product Name', name: 'name', type: 'text' },
-          { label: 'Brand', name: 'brand', type: 'text' },
-          { label: 'Description', name: 'description', type: 'textarea' },
-          { label: 'Price', name: 'price', type: 'number' },
-          { label: 'Stock Quantity', name: 'stock_quantity', type: 'number' },
+          { label: t('product.name'), name: 'name', type: 'text' },
+          { label: t('product.brand'), name: 'brand', type: 'text' },
+          { label: t('product.description'), name: 'description', type: 'textarea' },
+          { label: t('product.price'), name: 'price', type: 'number' },
+          { label: t('product.stock'), name: 'stock_quantity', type: 'number' },
         ].map(({ label, name, type }) => (
           <div key={name} className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
             <label htmlFor={name} className="w-full sm:w-40 font-medium">{label}:</label>
@@ -184,7 +186,7 @@ const UpdateProduct = () => {
         ))}
 
         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-          <label htmlFor="category" className="w-full sm:w-40 font-medium">Category:</label>
+          <label htmlFor="category" className="w-full sm:w-40 font-medium">{t('product.category')}:</label>
           <select
             id="category"
             name="category"
@@ -192,7 +194,7 @@ const UpdateProduct = () => {
             onChange={handleInputChange}
             className="flex-1 px-4 py-2 border rounded text-sm sm:text-base"
           >
-            <option value="">-- Select Category --</option>
+            <option value="">-- {t('product.select_category')} --</option>
             {categories.map((cat) => (
               <option key={cat.CategoryID} value={cat.CategoryName}>{cat.CategoryName}</option>
             ))}
@@ -200,7 +202,7 @@ const UpdateProduct = () => {
         </div>
 
         <div className="space-y-2">
-          <p className="font-semibold">Specifications:</p>
+          <p className="font-semibold">{t('product.specifications')}:</p>
           {specifications.map((spec, index) => (
             <div key={index} className="flex flex-col sm:flex-row gap-2">
               <input
@@ -219,18 +221,18 @@ const UpdateProduct = () => {
                 className="flex-1 px-2 py-1 border rounded text-sm"
               />
               <button type="button" onClick={() => handleRemoveSpec(index)} className="text-red-500 hover:text-red-700 text-sm">
-                Remove
+                {t('common.delete')}
               </button>
             </div>
           ))}
           <button type="button" onClick={handleAddSpec} className="text-blue-600 underline text-sm">
-            + Add Specification
+            + {t('product.add_spec')}
           </button>
         </div>
 
         {(imagePreview || formData.image_url) && (
           <div>
-            <p className="font-semibold">Preview Image:</p>
+            <p className="font-semibold">{t('product.preview_image')}:</p>
             <img
               src={imagePreview || formData.image_url}
               alt="Preview"
@@ -240,7 +242,7 @@ const UpdateProduct = () => {
         )}
 
         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-          <label htmlFor="image" className="w-full sm:w-40 font-medium">Upload Image:</label>
+          <label htmlFor="image" className="w-full sm:w-40 font-medium">{t('product.upload_image')}:</label>
           <input type="file" accept="image/*" onChange={handleImageChange} className="flex-1 text-sm" />
         </div>
 
@@ -248,11 +250,11 @@ const UpdateProduct = () => {
           type="submit"
           className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition text-sm sm:text-base"
         >
-          Update Product
+          {t('product.update_title')}
         </button>
       </form>
     </div>
   );
 };
 
-export default UpdateProduct;
+export default UpdateProduct;

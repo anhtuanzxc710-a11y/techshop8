@@ -5,6 +5,7 @@ import axios from 'axios';
 import ProductCard from '../components/ProductCard';
 import { SkeletonGrid } from '../components/SkeletonCard';
 import { Filter, X, SlidersHorizontal, Trash2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const categoriesList = [
   'Điện thoại di động', 'Smartphone', 'Laptop', 'Tablet', 'Smartwatch', 
@@ -12,102 +13,108 @@ const categoriesList = [
   'Máy giặt', 'Máy hút bụi', 'Tủ lạnh', 'Tivi', 'Camera', 'Webcam'
 ];
 const brandsList = ['Apple', 'Samsung', 'Xiaomi', 'OPPO', 'Asus', 'Acer', 'MSI', 'Logitech', 'Sony', 'LG', 'JBL', 'Huawei', 'Hera'];
-const priceRangesList = [
-  { label: 'Dưới 1 triệu', min: 0, max: 1000000 },
-  { label: '1 - 5 triệu', min: 1000000, max: 5000000 },
-  { label: '5 - 15 triệu', min: 5000000, max: 15000000 },
-  { label: '15 - 30 triệu', min: 15000000, max: 30000000 },
-  { label: '30 - 50 triệu', min: 30000000, max: 50000000 },
-  { label: 'Trên 50 triệu', min: 50000000, max: 999999999 },
-];
 
-const FilterSidebar = ({ category, toggleCategory, brand, toggleBrand, priceRange, setPriceRange, showBsl, setShowBsl, handleClearFilter }) => (
-  <div className="space-y-8">
-    <div className="flex items-center justify-between">
-      <h3 className="text-lg font-bold text-neutral-900 flex items-center gap-2">
-        <Filter className="w-5 h-5" /> Bộ lọc
-      </h3>
-      <button onClick={handleClearFilter} className="text-xs text-primary hover:underline flex items-center gap-1">
-        <Trash2 className="w-3 h-3" /> Xóa lọc
-      </button>
-    </div>
+const FilterSidebar = ({ category, toggleCategory, brand, toggleBrand, priceRange, setPriceRange, showBsl, setShowBsl, handleClearFilter }) => {
+  const { t } = useTranslation();
+  
+  const priceRangesList = [
+    { label: t('filter.price_under_1m'), min: 0, max: 1000000 },
+    { label: t('filter.price_1_5m'), min: 1000000, max: 5000000 },
+    { label: t('filter.price_5_15m'), min: 5000000, max: 15000000 },
+    { label: t('filter.price_15_30m'), min: 15000000, max: 30000000 },
+    { label: t('filter.price_30_50m'), min: 30000000, max: 50000000 },
+    { label: t('filter.price_over_50m'), min: 50000000, max: 999999999 },
+  ];
 
-    {/* Category */}
-    <div>
-      <h4 className="font-semibold text-neutral-800 mb-4 text-xs uppercase tracking-widest">Danh mục</h4>
-      <div className="space-y-2">
-        {categoriesList.map((cat) => (
-          <label key={cat} className="flex items-center gap-3 cursor-pointer group">
-            <input
-              type="checkbox"
-              checked={category.includes(cat)}
-              onChange={() => toggleCategory(cat)}
-              className="w-4 h-4 rounded border-neutral-300 text-primary focus:ring-primary"
-            />
-            <span className={`text-sm transition-colors ${category.includes(cat) ? 'text-primary font-semibold' : 'text-neutral-600 group-hover:text-neutral-900'}`}>
-              {cat}
-            </span>
-          </label>
-        ))}
+  return (
+    <div className="space-y-8">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-bold text-neutral-900 flex items-center gap-2">
+          <Filter className="w-5 h-5" /> {t('common.filter')}
+        </h3>
+        <button onClick={handleClearFilter} className="text-xs text-primary hover:underline flex items-center gap-1">
+          <Trash2 className="w-3 h-3" /> {t('common.clear_filter')}
+        </button>
+      </div>
+
+      {/* Category */}
+      <div>
+        <h4 className="font-semibold text-neutral-800 mb-4 text-xs uppercase tracking-widest">{t('filter.category')}</h4>
+        <div className="space-y-2">
+          {categoriesList.map((cat) => (
+            <label key={cat} className="flex items-center gap-3 cursor-pointer group">
+              <input
+                type="checkbox"
+                checked={category.includes(cat)}
+                onChange={() => toggleCategory(cat)}
+                className="w-4 h-4 rounded border-neutral-300 text-primary focus:ring-primary"
+              />
+              <span className={`text-sm transition-colors ${category.includes(cat) ? 'text-primary font-semibold' : 'text-neutral-600 group-hover:text-neutral-900'}`}>
+                {cat}
+              </span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* Brand */}
+      <div>
+        <h4 className="font-semibold text-neutral-800 mb-4 text-xs uppercase tracking-widest">{t('filter.brand')}</h4>
+        <div className="grid grid-cols-2 gap-2">
+          {brandsList.map((br) => (
+            <button
+              key={br}
+              onClick={() => toggleBrand(br)}
+              className={`px-3 py-2 text-xs rounded-lg border transition-all ${brand.includes(br)
+                  ? 'bg-primary-50 border-primary text-primary font-bold'
+                  : 'bg-white border-neutral-200 text-neutral-600 hover:border-neutral-300'
+                }`}
+            >
+              {br}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Price Ranges */}
+      <div>
+        <h4 className="font-semibold text-neutral-800 mb-4 text-xs uppercase tracking-widest">{t('filter.price_range')}</h4>
+        <div className="space-y-2">
+          {priceRangesList.map((range) => (
+            <label key={range.label} className="flex items-center gap-3 cursor-pointer group">
+              <input
+                type="radio"
+                name="priceRange"
+                checked={priceRange?.min === range.min && priceRange?.max === range.max}
+                onChange={() => setPriceRange(range)}
+                className="w-4 h-4 border-neutral-300 text-primary focus:ring-primary"
+              />
+              <span className={`text-sm transition-colors ${priceRange?.min === range.min && priceRange?.max === range.max ? 'text-primary font-semibold' : 'text-neutral-600 group-hover:text-neutral-900'}`}>
+                {range.label}
+              </span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* Best Seller */}
+      <div>
+        <label className="flex items-center gap-3 cursor-pointer group p-3 bg-amber-50 rounded-xl border border-amber-100">
+          <input
+            type="checkbox"
+            checked={showBsl}
+            onChange={() => setShowBsl(!showBsl)}
+            className="w-4 h-4 rounded border-amber-300 text-amber-500 focus:ring-amber-500"
+          />
+          <span className="text-sm font-bold text-amber-700">{t('common.bestseller')}</span>
+        </label>
       </div>
     </div>
-
-    {/* Brand */}
-    <div>
-      <h4 className="font-semibold text-neutral-800 mb-4 text-xs uppercase tracking-widest">Thương hiệu</h4>
-      <div className="grid grid-cols-2 gap-2">
-        {brandsList.map((br) => (
-          <button
-            key={br}
-            onClick={() => toggleBrand(br)}
-            className={`px-3 py-2 text-xs rounded-lg border transition-all ${brand.includes(br)
-                ? 'bg-primary-50 border-primary text-primary font-bold'
-                : 'bg-white border-neutral-200 text-neutral-600 hover:border-neutral-300'
-              }`}
-          >
-            {br}
-          </button>
-        ))}
-      </div>
-    </div>
-
-    {/* Price Ranges */}
-    <div>
-      <h4 className="font-semibold text-neutral-800 mb-4 text-xs uppercase tracking-widest">Khoảng giá</h4>
-      <div className="space-y-2">
-        {priceRangesList.map((range) => (
-          <label key={range.label} className="flex items-center gap-3 cursor-pointer group">
-            <input
-              type="radio"
-              name="priceRange"
-              checked={priceRange?.label === range.label}
-              onChange={() => setPriceRange(range)}
-              className="w-4 h-4 border-neutral-300 text-primary focus:ring-primary"
-            />
-            <span className={`text-sm transition-colors ${priceRange?.label === range.label ? 'text-primary font-semibold' : 'text-neutral-600 group-hover:text-neutral-900'}`}>
-              {range.label}
-            </span>
-          </label>
-        ))}
-      </div>
-    </div>
-
-    {/* Best Seller */}
-    <div>
-      <label className="flex items-center gap-3 cursor-pointer group p-3 bg-amber-50 rounded-xl border border-amber-100">
-        <input
-          type="checkbox"
-          checked={showBsl}
-          onChange={() => setShowBsl(!showBsl)}
-          className="w-4 h-4 rounded border-amber-300 text-amber-500 focus:ring-amber-500"
-        />
-        <span className="text-sm font-bold text-amber-700">Sản phẩm bán chạy</span>
-      </label>
-    </div>
-  </div>
-);
+  );
+};
 
 const Product = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { backendurl, search } = useContext(AppContext);
 
@@ -224,11 +231,11 @@ const Product = () => {
                 onChange={(e) => setSortOrder(e.target.value)}
                 className="flex-1 sm:flex-none bg-white border border-neutral-200 rounded-xl px-4 py-2 text-sm font-bold focus:outline-none focus:border-primary"
               >
-                <option value="">Mặc định</option>
-                <option value="newest">Mới nhất</option>
-                <option value="oldest">Cũ nhất</option>
-                <option value="price-asc">Giá: Thấp đến Cao</option>
-                <option value="price-desc">Giá: Cao đến Thấp</option>
+                <option value="">{t('common.sort_default')}</option>
+                <option value="newest">{t('common.sort_newest')}</option>
+                <option value="oldest">{t('common.sort_oldest')}</option>
+                <option value="price-asc">{t('common.sort_price_asc')}</option>
+                <option value="price-desc">{t('common.sort_price_desc')}</option>
               </select>
             </div>
           </div>

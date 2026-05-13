@@ -1,8 +1,10 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { AdminContext } from '../context/AdminContext';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const Search = ({ search, setSearch }) => {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState(search || '');
   const { backendurl, token } = useContext(AdminContext);
   const navigate = useNavigate();
@@ -29,7 +31,7 @@ const Search = ({ search, setSearch }) => {
         type='search'
         name='search'
         id='search'
-        placeholder='Search'
+        placeholder={t('common.search_placeholder')}
         value={searchTerm}
         onChange={handleInputChange}
         className='w-full border-none bg-transparent px-4 py-1 text-gray-900 outline-none'
@@ -38,10 +40,10 @@ const Search = ({ search, setSearch }) => {
         onClick={handleSearchClick}
         className='m-2 rounded bg-blue-500 px-4 py-2 text-white'
       >
-        Search
+        {t('common.search_placeholder').replace('...', '')}
       </button>
     </div>
   );
 };
 
-export default Search;
+export default Search;
