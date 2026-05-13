@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { assets } from '../assets/assets';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
@@ -53,48 +53,48 @@ const Banner = () => {
   }, []);
 
   return (
-    <div className="relative w-full h-[350px] sm:h-[450px] lg:h-[550px] overflow-hidden rounded-2xl mb-8 group shadow-xl">
+    <div className="relative w-full h-[280px] sm:h-[350px] lg:h-[400px] overflow-hidden rounded-lg group shadow-sm border border-neutral-200">
       <AnimatePresence mode="wait">
         <motion.div
           key={currentIndex}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.7 }}
+          transition={{ duration: 0.5 }}
           className="absolute inset-0 w-full h-full bg-cover bg-center"
           style={{ backgroundImage: `url(${images[currentIndex].url})` }}
         >
           {/* Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent" />
           
           {/* Content */}
-          <div className="relative h-full container-main flex flex-col justify-center px-8 md:px-16">
+          <div className="relative h-full flex flex-col justify-center px-8 md:px-12">
             <motion.p
-              initial={{ y: 20, opacity: 0 }}
+              initial={{ y: 15, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.2 }}
-              className="text-primary-400 font-bold tracking-widest text-xs md:text-sm mb-2"
+              className="text-primary font-bold tracking-wider text-xs md:text-sm mb-1"
             >
               {images[currentIndex].title}
             </motion.p>
             <motion.h2
-              initial={{ y: 20, opacity: 0 }}
+              initial={{ y: 15, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.3 }}
-              className="text-white text-3xl md:text-5xl font-black mb-4 leading-tight max-w-lg"
+              className="text-white text-2xl md:text-4xl font-bold mb-3 leading-tight max-w-md"
             >
               {images[currentIndex].subtitle}
             </motion.h2>
             <motion.p
-              initial={{ y: 20, opacity: 0 }}
+              initial={{ y: 15, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.4 }}
-              className="text-neutral-300 text-sm md:text-base max-w-md mb-8 line-clamp-2"
+              className="text-neutral-300 text-sm max-w-sm mb-5 line-clamp-2"
             >
               {images[currentIndex].description}
             </motion.p>
             <motion.div
-              initial={{ y: 20, opacity: 0 }}
+              initial={{ y: 15, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.5 }}
             >
@@ -103,7 +103,7 @@ const Banner = () => {
                   setSearch('');
                   navigate(images[currentIndex].link);
                 }}
-                className="btn-primary rounded-full px-8 py-3 text-sm font-bold shadow-glow inline-block"
+                className="bg-primary hover:bg-primary/90 text-white rounded-md px-6 py-2.5 text-sm font-semibold transition-all inline-block"
               >
                 {images[currentIndex].cta}
               </button>
@@ -115,25 +115,25 @@ const Banner = () => {
       {/* Navigation Arrows */}
       <button
         onClick={prevSlide}
-        className="absolute top-1/2 left-4 -translate-y-1/2 w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all hover:bg-white hover:text-black z-10"
+        className="absolute top-1/2 left-3 -translate-y-1/2 w-9 h-9 rounded-md bg-black/30 backdrop-blur-sm flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all hover:bg-black/50 z-10"
       >
-        <ChevronLeft className="w-6 h-6" />
+        <ChevronLeft size={20} />
       </button>
       <button
         onClick={nextSlide}
-        className="absolute top-1/2 right-4 -translate-y-1/2 w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all hover:bg-white hover:text-black z-10"
+        className="absolute top-1/2 right-3 -translate-y-1/2 w-9 h-9 rounded-md bg-black/30 backdrop-blur-sm flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all hover:bg-black/50 z-10"
       >
-        <ChevronRight className="w-6 h-6" />
+        <ChevronRight size={20} />
       </button>
 
       {/* Indicators */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
         {images.map((_, idx) => (
           <button
             key={idx}
             onClick={() => setCurrentIndex(idx)}
-            className={`w-2.5 h-2.5 rounded-full transition-all ${
-              idx === currentIndex ? 'bg-primary w-8' : 'bg-white/50'
+            className={`h-2 rounded-full transition-all ${
+              idx === currentIndex ? 'bg-primary w-6' : 'bg-white/50 w-2'
             }`}
           />
         ))}

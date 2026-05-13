@@ -1,24 +1,17 @@
-import React, { useContext, useState, useEffect } from 'react';
-import { AdminContext } from '../context/AdminContext';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Search as SearchIcon } from 'lucide-react';
 
 const Search = ({ search, setSearch }) => {
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState(search || '');
-  const { backendurl, token } = useContext(AdminContext);
   const navigate = useNavigate();
-
-  const handleInputChange = (e) => {
-    setSearchTerm(e.target.value);
-  };
 
   const handleSearchClick = () => {
     const trimmed = searchTerm.trim();
-    if (trimmed) {
-      setSearch(trimmed);
-      navigate('/products-list');
-    }
+    setSearch(trimmed);
+    navigate('/products-list');
   };
 
   useEffect(() => {
@@ -26,24 +19,23 @@ const Search = ({ search, setSearch }) => {
   }, [search]);
 
   return (
-    <div className='flex w-72 md:w-96 rounded bg-white border border-gray-300 h-13'>
+    <div className="flex items-center w-full bg-neutral-50 rounded-lg border border-neutral-200 focus-within:border-primary focus-within:bg-white focus-within:ring-2 focus-within:ring-primary/10 transition-all overflow-hidden">
       <input
-        type='search'
-        name='search'
-        id='search'
+        type="text"
         placeholder={t('common.search_placeholder')}
         value={searchTerm}
-        onChange={handleInputChange}
-        className='w-full border-none bg-transparent px-4 py-1 text-gray-900 outline-none'
+        onChange={(e) => setSearchTerm(e.target.value)}
+        onKeyDown={(e) => e.key === 'Enter' && handleSearchClick()}
+        className="flex-1 bg-transparent px-4 py-2 text-[13px] text-neutral-800 outline-none placeholder:text-neutral-400"
       />
       <button
         onClick={handleSearchClick}
-        className='m-2 rounded bg-blue-500 px-4 py-2 text-white'
+        className="p-2 mr-1 text-neutral-400 hover:text-primary transition-colors"
       >
-        {t('common.search_placeholder').replace('...', '')}
+        <SearchIcon size={16} />
       </button>
     </div>
   );
 };
 
-export default Search;
+export default Search;

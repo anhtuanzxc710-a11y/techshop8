@@ -1,5 +1,5 @@
 import React from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useLocation } from 'react-router-dom'
 import Home from './pages/Home'
 import About from './pages/About'
 import Product from './pages/Product'
@@ -15,40 +15,58 @@ import Jobs from './pages/Jobs'
 import Cart from './pages/Cart'
 import DetailProduct from './pages/DetailProduct'
 import CheckoutAddToCart from './pages/CheckoutAddToCart'
-import { ToastContainer, toast } from 'react-toastify'
+import { ToastContainer } from 'react-toastify'
 import MyComments from './pages/MyComments'
 import ChatbotPopup from './components/ChatbotPopup'
 import Verify from './pages/Verify'
 import ChangePassword from './pages/ChangePassword'
 import ShoppingCart from './pages/ShoppingCart'
 import OrderDetail from './pages/OrderDetail'
-const App = () => {
-  return (
+import { AnimatePresence, motion } from 'framer-motion'
 
-    <div className='mx-4 sm:mx-[5%]'>
-      <ToastContainer />
-      <Navbar className='z-50' />
-      <div className='flex flex-col'>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/products" element={<Product />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/products/:category" element={<Product />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/mycart" element={<Cart />} />
-          <Route path="/shopping-cart" element={<ShoppingCart />} />
-          <Route path="/order-detail/:orderId" element={<OrderDetail />} />
-          <Route path="/my-profile" element={<MyProfile />} />
-          <Route path="/privacy" element={<Privacy />} />
-          <Route path="/jobs" element={<Jobs />} />
-          <Route path="/detail/:prID" element={<DetailProduct />} />
-          <Route path="/checkout" element={<CheckoutAddToCart />} />
-          <Route path="/comments" element={<MyComments />} />
-          <Route path="/verify" element={<Verify />} />
-          <Route path="/changePassword" element={<ChangePassword />} />
-        </Routes>
-      </div>
+const PageWrapper = ({ children }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: -10 }}
+    transition={{ duration: 0.3 }}
+  >
+    {children}
+  </motion.div>
+)
+
+const App = () => {
+  const location = useLocation();
+
+  return (
+    <div className='min-h-screen flex flex-col bg-background'>
+      <ToastContainer position="bottom-right" />
+      <Navbar />
+      
+      <main className='flex-grow pt-24'>
+        <AnimatePresence mode='wait'>
+          <Routes location={location} key={location.pathname}>
+            <Route path="/" element={<PageWrapper><Home /></PageWrapper>} />
+            <Route path="/about" element={<PageWrapper><About /></PageWrapper>} />
+            <Route path="/products" element={<PageWrapper><Product /></PageWrapper>} />
+            <Route path="/contact" element={<PageWrapper><Contact /></PageWrapper>} />
+            <Route path="/products/:category" element={<PageWrapper><Product /></PageWrapper>} />
+            <Route path="/login" element={<PageWrapper><Login /></PageWrapper>} />
+            <Route path="/mycart" element={<PageWrapper><Cart /></PageWrapper>} />
+            <Route path="/shopping-cart" element={<PageWrapper><ShoppingCart /></PageWrapper>} />
+            <Route path="/order-detail/:orderId" element={<PageWrapper><OrderDetail /></PageWrapper>} />
+            <Route path="/my-profile" element={<PageWrapper><MyProfile /></PageWrapper>} />
+            <Route path="/privacy" element={<PageWrapper><Privacy /></PageWrapper>} />
+            <Route path="/jobs" element={<PageWrapper><Jobs /></PageWrapper>} />
+            <Route path="/detail/:prID" element={<PageWrapper><DetailProduct /></PageWrapper>} />
+            <Route path="/checkout" element={<PageWrapper><CheckoutAddToCart /></PageWrapper>} />
+            <Route path="/comments" element={<PageWrapper><MyComments /></PageWrapper>} />
+            <Route path="/verify" element={<PageWrapper><Verify /></PageWrapper>} />
+            <Route path="/changePassword" element={<PageWrapper><ChangePassword /></PageWrapper>} />
+          </Routes>
+        </AnimatePresence>
+      </main>
+
       <ChatbotPopup />
       <Footer />
     </div>
@@ -56,3 +74,4 @@ const App = () => {
 }
 
 export default App
+

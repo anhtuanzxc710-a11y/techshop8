@@ -24,24 +24,26 @@ const App = () => {
   const { aToken } = useContext(AdminContext)
 
   return aToken ? (
-    <div className="bg-white">
+    <div className="bg-background min-h-screen flex flex-col">
       <ToastContainer />
       <Navbar setSidebarVisible={setSidebarVisible} />
-      <div className="flex flex-col md:flex-row items-right">
+      <div className="flex flex-1 overflow-hidden">
         <Sidebar isVisible={isSidebarVisible} setSidebarVisible={setSidebarVisible} />
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/categories" element={<Categories />} />
-          <Route path="/users" element={<Users />} />
-          <Route path="/products-list" element={<ProductsList />} />
-          <Route path="/all-carts" element={<AllCarts />} />
-          <Route path="/comments-list" element={<Comments />} />
-          <Route path="/add-product" element={<AddProduct />} />
-          <Route path="/update-product" element={<UpdateProduct />} />
-          <Route path="/notifications" element={<Notifications />} />
-          <Route path="/vouchers" element={<Vouchers />} />
-          <Route path="/add-voucher" element={<AddVoucher />} />
-        </Routes>
+        <main className="flex-1 overflow-y-auto p-4 md:p-8">
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/categories" element={<Categories />} />
+            <Route path="/users" element={<Users />} />
+            <Route path="/products-list" element={<ProductsList />} />
+            <Route path="/all-carts" element={<AllCarts />} />
+            <Route path="/comments-list" element={<Comments />} />
+            <Route path="/add-product" element={<AddProduct />} />
+            <Route path="/update-product" element={<UpdateProduct />} />
+            <Route path="/notifications" element={<Notifications />} />
+            <Route path="/vouchers" element={<Vouchers />} />
+            <Route path="/add-voucher" element={<AddVoucher />} />
+          </Routes>
+        </main>
       </div>
     </div>
   ) : (
