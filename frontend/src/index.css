@@ -1,24 +1,106 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Áp dụng font Outfit cho body */
-body {
-  font-family: 'Outfit', sans-serif;
-  @apply font-sans;
-  /* Sử dụng font-sans từ Tailwind */
+@layer base {
+  :root {
+    /* HoangHaPC-inspired Color Palette */
+    --primary: 210 100% 44%;       /* #0678DB - Main blue */
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    
+    --background: 210 20% 97%;     /* #f4f6f8 light grey background */
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 210 100% 44%;
+    
+    --header-bg: 216 50% 16%;      /* Dark navy for header */
+    --price-red: 0 85% 50%;        /* Red for prices */
+
+    --radius: 0.5rem;
+  }
+
+  body {
+    font-family: 'Be Vietnam Pro', sans-serif;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+  }
+
+  ::selection {
+    background-color: hsla(var(--primary) / 0.2);
+    color: hsl(var(--primary));
+  }
+
+  * {
+    font-family: inherit;
+    border-color: hsl(var(--border));
+  }
 }
 
-* {
-  font-family: inherit;
-  /* Đảm bảo các phần tử thừa hưởng font của body */
+@layer components {
+  .container-main {
+    @apply max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .glass-morphism {
+    @apply bg-white/70 backdrop-blur-xl border border-white/20 shadow-xl;
+  }
+
+  .btn-primary {
+    @apply bg-primary text-white hover:bg-primary/90 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .shadow-premium {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  }
+
+  .shadow-glow {
+    box-shadow: 0 0 15px rgba(6, 120, 219, 0.25);
+  }
+
+  .price-text {
+    color: hsl(var(--price-red));
+  }
+
+  .header-bg {
+    background-color: hsl(var(--header-bg));
+  }
+
+  /* Product card hover */
+  .product-card {
+    @apply bg-white rounded-lg border border-neutral-100 overflow-hidden transition-all duration-300;
+  }
+  .product-card:hover {
+    @apply shadow-premium border-primary/30;
+    transform: translateY(-2px);
+  }
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-neutral-100;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-neutral-300 rounded-full hover:bg-neutral-400;
 }
 
 .active hr {
   @apply block;
-}
-
-::-webkit-scrollbar {
-  @apply hidden;
 }

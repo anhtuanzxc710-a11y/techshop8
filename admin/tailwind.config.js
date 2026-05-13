@@ -6,8 +6,13 @@ export default {
   ],
   theme: {
     extend: {
+      colors: {
+        primary: "hsl(var(--primary))",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
+      },
       fontFamily: {
-        sans: ['Roboto', 'sans-serif'], // Thêm 'Roboto' vào đây
+        sans: ['Be Vietnam Pro', 'sans-serif'],
       },
     },
   },

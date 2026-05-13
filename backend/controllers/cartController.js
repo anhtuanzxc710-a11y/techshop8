@@ -40,12 +40,40 @@ const changeStatus = async (req, res) => {
       return res
         .status(404)
         .json({ success: false, message: "Cannot get status" });
+
+    const order = await cartModel.findById(cartId);
+    if (!order) return res.status(404).json({ success: false, message: "Order not found" });
+
+    const prevStatus = order.status;
+    const isSubtractedState = (s) => ["shipped", "delivered"].includes(s);
+
+    // If moving TO a subtracted state FROM a non-subtracted state -> Subtract
+    if (isSubtractedState(status) && !isSubtractedState(prevStatus)) {
+      for (const item of order.items) {
+        const product = await productModel.findById(item.ProductID);
+        if (product) {
+          await productModel.findByIdAndUpdate(item.ProductID, {
+            stock_quantity: Math.max(0, product.stock_quantity - item.Quantity)
+          });
+        }
+      }
+    } 
+    // If moving FROM a subtracted state TO a non-subtracted state (e.g. cancelled) -> Return stock
+    else if (!isSubtractedState(status) && isSubtractedState(prevStatus)) {
+      for (const item of order.items) {
+        await productModel.findByIdAndUpdate(item.ProductID, {
+          $inc: { stock_quantity: item.Quantity }
+        });
+      }
+    }
+
     await cartModel.findByIdAndUpdate(cartId, { status });
     return res.status(200).json({
       success: true,
       message: `Change status to ${status} successfully`,
     });
   } catch (error) {
+    console.error("Error in changeStatus:", error);
     return res.status(500).json({ message: "Server Error" });
   }
 };
@@ -73,11 +101,13 @@ const cancelOrder = async (req, res) => {
       });
     }
 
-    // In SQL, order.itemId might be null if there are multiple items, but for backwards compatibility it uses first item
-    if (order.itemId) {
-      await productModel.findByIdAndUpdate(order.itemId, {
-        $inc: { stock_quantity: order.TotalItems || 1 },
-      });
+    // Return stock only if it was already subtracted (status was shipped or delivered)
+    if (["shipped", "delivered"].includes(order.status)) {
+      for (const item of order.items) {
+        await productModel.findByIdAndUpdate(item.ProductID, {
+          $inc: { stock_quantity: item.Quantity },
+        });
+      }
     }
 
     await cartModel.findByIdAndUpdate(orderId, { status: "cancelled" });
@@ -159,12 +189,8 @@ const createCart = async (req, res) => {
 
     const cart = await cartModel.createOrder(orderData);
 
-    for (const item of finalItems) {
-      const product = await productModel.findById(item.itemId);
-      await productModel.findByIdAndUpdate(item.itemId, {
-        stock_quantity: product.stock_quantity - item.quantity
-      });
-    }
+    // Stock subtraction removed here. Now happens in changeStatus when admin ships/delivers.
+
 
     res.json({
       success: true,

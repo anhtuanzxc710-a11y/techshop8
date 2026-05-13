@@ -1,7 +1,6 @@
 import React, { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Star, ShoppingCart, Plus } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { ShoppingCart } from 'lucide-react';
 import { AppContext } from '../context/AppContext';
 import { toast } from 'react-toastify';
 import axios from 'axios';
@@ -37,72 +36,75 @@ const ProductCard = ({ product }) => {
     }
   };
 
+  const discount = product.bestseller ? 15 : null;
+  const originalPrice = discount ? Math.round(product.price / (1 - discount / 100)) : null;
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      className="group bg-white rounded-3xl border border-neutral-100 p-4 transition-all duration-500 hover:shadow-2xl hover:shadow-primary-100/30 hover:border-primary-100 flex flex-col h-full relative overflow-hidden"
+    <div
+      className="product-card group flex flex-col h-full cursor-pointer relative"
+      onClick={handleProductClick}
     >
-      {/* Badge Bestseller */}
-      {product.bestseller && (
-        <div className="absolute top-4 left-4 z-10">
-          <span className="bg-amber-400 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
-            Best Seller
-          </span>
+      {/* Discount Badge */}
+      {discount && (
+        <div className="absolute top-2 right-2 z-10 bg-red-500 text-white text-[11px] font-bold px-2 py-0.5 rounded">
+          -{discount}%
         </div>
       )}
 
-      {/* Image Container */}
-      <div
-        className="relative aspect-square mb-4 rounded-2xl overflow-hidden bg-neutral-50 flex items-center justify-center cursor-pointer"
-        onClick={handleProductClick}
-      >
+      {/* Image */}
+      <div className="relative aspect-square bg-white flex items-center justify-center p-4 overflow-hidden">
         <img
           src={product.image_url}
           alt={product.name}
-          className="w-full h-full object-contain p-4 transition-transform duration-700 group-hover:scale-110"
+          className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
         />
       </div>
 
-      {/* Product Details */}
-      <div className="flex flex-col flex-1 cursor-pointer" onClick={handleProductClick}>
-        <div className="mb-2 flex items-center justify-between">
-          <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">{product.brand}</span>
-          <div className="flex items-center gap-1">
-            <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-            <span className="text-[10px] font-bold text-neutral-600">{product.rating ? product.rating.toFixed(1) : '—'}</span>
-          </div>
-        </div>
+      {/* Info */}
+      <div className="flex flex-col flex-1 p-3 pt-2">
+        {/* Brand */}
+        <span className="text-[11px] font-semibold text-primary uppercase mb-1">{product.brand}</span>
 
-        <h3 className="text-neutral-900 font-bold text-sm mb-2 line-clamp-2 min-h-[40px] group-hover:text-primary transition-colors">
+        {/* Name */}
+        <h3 className="text-[13px] font-semibold text-neutral-800 leading-snug line-clamp-2 min-h-[36px] mb-2 group-hover:text-primary transition-colors">
           {product.name}
         </h3>
 
-        <div className="mt-auto pt-3 flex items-center justify-between">
-          <div className="flex flex-col gap-1">
-            <span className="text-primary font-black text-lg">
+        {/* Price */}
+        <div className="mt-auto">
+          <div className="flex items-baseline gap-2 flex-wrap">
+            <span className="price-text font-bold text-base">
               {new Intl.NumberFormat('vi-VN').format(product.price)}₫
             </span>
-            {product.available ? (
-              <span className="text-[10px] text-success font-bold flex items-center gap-1">
-                <div className="w-1.5 h-1.5 bg-success rounded-full animate-pulse" /> Sẵn hàng
+            {originalPrice && (
+              <span className="text-neutral-400 text-xs line-through">
+                {new Intl.NumberFormat('vi-VN').format(originalPrice)}₫
               </span>
-            ) : (
-              <span className="text-[10px] text-neutral-400 font-bold italic">Hết hàng</span>
             )}
           </div>
-          {/* Add to Cart button */}
-          <button
-            onClick={handleAddToCart}
-            className="w-10 h-10 rounded-xl bg-primary-50 text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-all"
-            title="Thêm vào giỏ"
-          >
-            <ShoppingCart className="w-4 h-4" />
-          </button>
+
+          {/* Stock status */}
+          <div className="mt-1.5">
+            {product.available !== false ? (
+              <span className="text-[11px] text-green-600 font-medium flex items-center gap-1">
+                <span className="w-1.5 h-1.5 bg-green-500 rounded-full inline-block"></span> Còn hàng
+              </span>
+            ) : (
+              <span className="text-[11px] text-neutral-400 font-medium">Hết hàng</span>
+            )}
+          </div>
         </div>
+
+        {/* Add to Cart Button */}
+        <button
+          onClick={handleAddToCart}
+          className="mt-3 w-full py-2 rounded-md bg-primary/10 text-primary text-xs font-bold flex items-center justify-center gap-2 hover:bg-primary hover:text-white transition-all active:scale-95 border border-primary/20 hover:border-primary"
+        >
+          <ShoppingCart size={14} />
+          Thêm vào giỏ
+        </button>
       </div>
-    </motion.div>
+    </div>
   );
 };
 

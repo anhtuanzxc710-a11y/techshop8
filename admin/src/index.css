@@ -1,6 +1,90 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-body {
-    @apply font-sans; 
+
+@layer base {
+  :root {
+    /* Admin Premium Palette - Matching Buyer Site */
+    --primary: 210 100% 44%;       /* #0678DB - Main blue */
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    
+    --background: 210 20% 97%;     /* #f4f6f8 light grey background */
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 210 100% 44%;
+    
+    --sidebar-bg: 216 50% 16%;      /* Dark navy for admin sidebar */
+    
+    --radius: 0.5rem;
   }
+
+  body {
+    font-family: 'Be Vietnam Pro', sans-serif;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  * {
+    font-family: inherit;
+    border-color: hsl(var(--border));
+  }
+}
+
+@layer components {
+  .admin-card {
+    @apply bg-white rounded-lg border border-neutral-200 shadow-sm p-5;
+  }
+  
+  .btn-primary {
+    @apply bg-primary text-white hover:bg-primary/90 px-4 py-2 rounded-md font-semibold transition-all active:scale-95 disabled:opacity-50;
+  }
+
+  .input-admin {
+    @apply w-full px-3 py-2 bg-white border border-neutral-300 rounded-md focus:ring-1 focus:ring-primary focus:border-primary outline-none text-sm transition-all;
+  }
+
+  .table-admin {
+    @apply w-full text-left text-sm border-collapse bg-white rounded-lg overflow-hidden;
+  }
+
+  .table-admin th {
+    @apply px-4 py-3 bg-neutral-50 text-neutral-600 font-bold border-b border-neutral-100;
+  }
+
+  .table-admin td {
+    @apply px-4 py-3 border-b border-neutral-50 text-neutral-800;
+  }
+
+  .sidebar-link {
+    @apply flex items-center gap-3 px-4 py-2.5 text-neutral-400 hover:text-white hover:bg-white/5 transition-all text-sm font-medium border-l-4 border-transparent;
+  }
+
+  .sidebar-link.active {
+    @apply text-white bg-white/10 border-primary;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-neutral-100;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-neutral-300 rounded-full hover:bg-neutral-400;
+}

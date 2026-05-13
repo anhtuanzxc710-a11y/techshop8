@@ -201,7 +201,8 @@ const resources = {
         "total": "Total Payment",
         "processing": "Processing...",
         "pay_zalopay": "Pay with ZaloPay",
-        "confirm_order": "Confirm Order"
+        "confirm_order": "Confirm Order",
+        "address_required": "Please enter your shipping address"
       },
       "cart_history": {
         "subtitle": "Manage and track the devices you've ordered.",
@@ -411,7 +412,8 @@ const resources = {
         "total": "Tổng thanh toán",
         "processing": "Đang xử lý...",
         "pay_zalopay": "Thanh toán với ZaloPay",
-        "confirm_order": "Xác nhận đặt hàng"
+        "confirm_order": "Xác nhận đặt hàng",
+        "address_required": "Vui lòng nhập địa chỉ nhận hàng"
       },
       "cart_history": {
         "subtitle": "Quản lý và theo dõi các thiết bị bạn đã đặt mua.",
