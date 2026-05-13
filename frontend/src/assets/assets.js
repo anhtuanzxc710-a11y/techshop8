@@ -43,7 +43,9 @@ import nnm from './nnm.jpg'
 import banner0 from './vdt.jpg'
 import herobanner from './herobanner-mobile-2x.webp'
 import about from './about_us.jpg'
+import anhqr from './anhqr.png'
 export const assets = {
+    anhqr,
     about,
     herobanner,
     banner0,
