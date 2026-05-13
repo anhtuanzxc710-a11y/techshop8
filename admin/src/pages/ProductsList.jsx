@@ -400,9 +400,12 @@ const ProductsList = () => {
 
             <div className="p-4">
               <p className="text-gray-800 font-bold text-sm line-clamp-1 mb-1">{item.name}</p>
-              <div className="flex justify-between items-center mb-4">
+              <div className="flex justify-between items-center mb-1">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 bg-gray-50 px-2 py-0.5 rounded">{item.category}</span>
                 <span className="text-primary font-bold text-xs">{Number(item.price).toLocaleString()} ₫</span>
+              </div>
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-[10px] font-semibold text-neutral-500">Kho: <strong className={item.stock_quantity <= 5 ? 'text-red-500' : 'text-neutral-700'}>{item.stock_quantity}</strong></span>
               </div>
 
               <div className="space-y-2 pt-2 border-t border-gray-50">
