@@ -4,33 +4,35 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
+import { useTranslation } from 'react-i18next';
 
 const Banner = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { setSearch } = useContext(AppContext);
   const images = [
     {
       url: assets.banner2,
-      title: "CÔNG NGHỆ MỚI",
-      subtitle: "Đỉnh Cao Hiệu Năng",
-      description: "Khám phá các dòng Laptop và Smartphone mới nhất với ưu đãi lên tới 30%.",
-      cta: "Mua ngay",
+      title: t('home.banners.b2.title'),
+      subtitle: t('home.banners.b2.subtitle'),
+      description: t('home.banners.b2.description'),
+      cta: t('home.banners.b2.cta'),
       link: "/products"
     },
     {
       url: assets.banner1,
-      title: "GAMING GEAR",
-      subtitle: "Bứt Phá Giới Hạn",
-      description: "Trang bị tốt nhất cho game thủ chuyên nghiệp. Giảm giá sốc cho phụ kiện.",
-      cta: "Xem ưu đãi",
+      title: t('home.banners.b1.title'),
+      subtitle: t('home.banners.b1.subtitle'),
+      description: t('home.banners.b1.description'),
+      cta: t('home.banners.b1.cta'),
       link: "/products/Accessory"
     },
     {
       url: assets.banner3,
-      title: "APPLE ECOSYSTEM",
-      subtitle: "Sang Trọng & Đẳng Cấp",
-      description: "Trải nghiệm hệ sinh thái Apple hoàn hảo. Hỗ trợ trả góp 0%.",
-      cta: "Khám phá",
+      title: t('home.banners.b3.title'),
+      subtitle: t('home.banners.b3.subtitle'),
+      description: t('home.banners.b3.description'),
+      cta: t('home.banners.b3.cta'),
       link: "/products/Apple"
     },
   ];

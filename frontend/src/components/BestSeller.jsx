@@ -42,7 +42,7 @@ const BestSeller = () => {
     <section className="section-sm">
       <SectionHeader 
         title={"Laptop " + t('common.bestseller')} 
-        subtitle="Tổng hợp các dòng Laptop hiệu năng cao với mức giá ưu đãi"
+        subtitle={t('home.bestseller_laptop_subtitle')}
         linkTo="/products"
       />
 
@@ -50,7 +50,7 @@ const BestSeller = () => {
         <SkeletonGrid count={5} />
       ) : bestSellingLaptops.length === 0 ? (
         <div className="py-12 text-center bg-neutral-50 rounded-2xl border border-dashed border-neutral-200">
-          <p className="text-neutral-500">Chưa có sản phẩm Laptop nào được tìm thấy.</p>
+          <p className="text-neutral-500">{t('home.no_laptops')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">

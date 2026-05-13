@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 
 const Cart = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { backendurl, token } = useContext(AppContext);
   const [cart, setCart] = useState([]);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -25,7 +25,7 @@ const Cart = () => {
       }
     } catch (error) {
       console.log(error);
-      toast.error("Không thể tải danh sách đơn hàng");
+      toast.error(t('order_detail.not_found'));
     }
   };
 
@@ -37,13 +37,13 @@ const Cart = () => {
         { headers: { token } }
       );
       if (response.status === 200) {
-        toast.success("Đã xóa đơn hàng");
+        toast.success(t('orders.delete_success'));
         await getMyCart();
       }
       setDeleteItemId('');
       setShowConfirm(false);
     } catch (error) {
-      toast.error("Không thể xóa đơn hàng");
+      toast.error(t('order_detail.submit_error'));
       setShowConfirm(false);
     }
   };
@@ -58,10 +58,10 @@ const Cart = () => {
       if (paymentUrl) {
         window.location.href = paymentUrl;
       } else {
-        toast.error("Không tìm thấy link thanh toán");
+        toast.error(t('checkout.zalopay_error'));
       }
     } catch (error) {
-      toast.error("Thanh toán thất bại");
+      toast.error(t('order_detail.submit_error'));
     }
   };
 
@@ -74,30 +74,30 @@ const Cart = () => {
 
     if (currentStatus === 'pending') {
       return <span className="flex items-center gap-1.5 text-[10px] font-black uppercase text-amber-600 bg-amber-50 px-3 py-1 rounded-full border border-amber-100">
-        <Clock className="w-3 h-3" /> Chờ xác nhận
+        <Clock className="w-3 h-3" /> {t('orders.pending')}
       </span>;
     }
     if (currentStatus === 'processing' || currentStatus === 'confirmed') {
       return <span className="flex items-center gap-1.5 text-[10px] font-black uppercase text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
-        <Package className="w-3 h-3" /> Đang xử lý
+        <Package className="w-3 h-3" /> {t('orders.processing')}
       </span>;
     }
     if (currentStatus === 'shipped') {
       return <span className="flex items-center gap-1.5 text-[10px] font-black uppercase text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100">
-        <Truck className="w-3 h-3" /> Đang giao
+        <Truck className="w-3 h-3" /> {t('orders.shipped')}
       </span>;
     }
     if (currentStatus === 'delivered') {
       return <span className="flex items-center gap-1.5 text-[10px] font-black uppercase text-success bg-success-50 px-3 py-1 rounded-full border border-success-100">
-        <CheckCircle2 className="w-3 h-3" /> Đã nhận hàng
+        <CheckCircle2 className="w-3 h-3" /> {t('orders.delivered')}
       </span>;
     }
     if (currentStatus === 'cancelled') {
       return <span className="flex items-center gap-1.5 text-[10px] font-black uppercase text-error bg-error-50 px-3 py-1 rounded-full border border-error-100">
-        <XCircle className="w-3 h-3" /> Đã hủy
+        <XCircle className="w-3 h-3" /> {t('orders.cancelled')}
       </span>;
     }
-    
+
     // Fallback cho trạng thái không xác định
     return <span className="flex items-center gap-1.5 text-[10px] font-black uppercase text-neutral-600 bg-neutral-100 px-3 py-1 rounded-full border border-neutral-200">
       <Clock className="w-3 h-3" /> {item.status}
@@ -111,13 +111,13 @@ const Cart = () => {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
         <div>
           <h1 className="text-3xl font-black text-neutral-900 mb-2">{t('order.history')}</h1>
-          <p className="text-neutral-500 font-medium">Quản lý và theo dõi các thiết bị bạn đã đặt mua.</p>
+          <p className="text-neutral-500 font-medium">{t('cart_history.subtitle')}</p>
         </div>
-        <button 
+        <button
           onClick={() => navigate('/products')}
           className="btn-primary btn-sm rounded-xl px-6 py-3"
         >
-          Tiếp tục mua sắm
+          {t('cart_history.continue_shopping')}
         </button>
       </div>
 
@@ -144,7 +144,7 @@ const Cart = () => {
                 {/* Details */}
                 <div className="flex-1 space-y-3">
                   <div className="flex flex-wrap items-start justify-between gap-3">
-                    <h3 
+                    <h3
                       onClick={() => navigate(`/order-detail/${item._id}`)}
                       className="font-bold text-neutral-900 leading-tight group-hover:text-primary transition-colors cursor-pointer"
                     >
@@ -152,21 +152,21 @@ const Cart = () => {
                     </h3>
                     {getStatusBadge(item)}
                   </div>
-                  
+
                   <div className="grid grid-cols-2 gap-y-2 text-xs font-medium text-neutral-500">
-                    <div className="flex items-center gap-2"><ShoppingBag className="w-3.5 h-3.5" /> SL: {item.totalItems}</div>
-                    <div className="flex items-center gap-2"><Calendar className="w-3.5 h-3.5" /> {new Date(new Date(item.deliveryDate).getTime() - 5 * 24 * 60 * 60 * 1000).toLocaleDateString('vi-VN')}</div>
+                    <div className="flex items-center gap-2"><ShoppingBag className="w-3.5 h-3.5" /> {t('order_detail.quantity')}: {item.totalItems}</div>
+                    <div className="flex items-center gap-2"><Calendar className="w-3.5 h-3.5" /> {new Date(new Date(item.deliveryDate).getTime() - 5 * 24 * 60 * 60 * 1000).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}</div>
                   </div>
 
                   <div className="pt-3 border-t border-neutral-50 flex items-center justify-between">
                     <p className="text-lg font-black text-primary">
-                      {new Intl.NumberFormat('vi-VN').format(item.totalPrice)}₫
+                      {new Intl.NumberFormat(i18n.language === 'vi' ? 'vi-VN' : 'en-US').format(item.totalPrice)}₫
                     </p>
                     <div className="flex items-center gap-2">
                       {/* Đã gỡ bỏ nút thanh toán ngoài lịch sử đơn hàng theo yêu cầu */}
                       {item.paymentStatus && item.status !== 'delivered' && (
                         <div className="px-3 py-1.5 bg-success-50 text-success text-[10px] font-black rounded-lg border border-success-100 flex items-center gap-1">
-                          <CheckCircle2 className="w-3 h-3" /> ĐÃ THANH TOÁN
+                          <CheckCircle2 className="w-3 h-3" /> {t('order.paid')}
                         </div>
                       )}
                       {(item.status === 'cancelled' || item.status === 'processing') && (
@@ -192,13 +192,13 @@ const Cart = () => {
           <div className="w-20 h-20 bg-neutral-50 rounded-full flex items-center justify-center mx-auto mb-6">
             <ShoppingBag className="w-10 h-10 text-neutral-300" />
           </div>
-          <h2 className="text-xl font-black text-neutral-900 mb-2">Chưa có đơn hàng nào</h2>
-          <p className="text-neutral-500 mb-8 max-w-xs mx-auto">Các thiết bị bạn đặt mua sẽ xuất hiện tại đây để dễ dàng theo dõi.</p>
-          <button 
+          <h2 className="text-xl font-black text-neutral-900 mb-2">{t('cart_history.empty')}</h2>
+          <p className="text-neutral-500 mb-8 max-w-xs mx-auto">{t('cart_history.empty_desc')}</p>
+          <button
             onClick={() => navigate('/products')}
             className="btn-primary rounded-full px-10 py-4 font-black shadow-glow"
           >
-            Bắt đầu mua sắm ngay
+            {t('cart_history.start_shopping')}
           </button>
         </div>
       )}
@@ -207,14 +207,14 @@ const Cart = () => {
       <AnimatePresence>
         {showConfirm && (
           <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
               onClick={() => setShowConfirm(false)}
             />
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -223,20 +223,20 @@ const Cart = () => {
               <div className="w-16 h-16 bg-error-50 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Trash2 className="w-8 h-8 text-error" />
               </div>
-              <h3 className="text-2xl font-black text-neutral-900 mb-2">Xác nhận xóa</h3>
-              <p className="text-neutral-500 mb-8">Bạn có chắc chắn muốn xóa đơn hàng này khỏi danh sách không?</p>
+              <h3 className="text-2xl font-black text-neutral-900 mb-2">{t('cart_history.confirm_delete')}</h3>
+              <p className="text-neutral-500 mb-8">{t('cart_history.delete_desc')}</p>
               <div className="flex gap-4">
                 <button
                   className="flex-1 py-4 bg-neutral-100 hover:bg-neutral-200 text-neutral-900 rounded-2xl font-black transition-colors"
                   onClick={() => setShowConfirm(false)}
                 >
-                  Hủy
+                  {t('order_detail.cancel')}
                 </button>
                 <button
                   className="flex-1 py-4 bg-error text-white rounded-2xl font-black shadow-lg shadow-error/30 hover:bg-error-600 transition-colors"
                   onClick={handleDelete}
                 >
-                  Xác nhận
+                  {t('orders.confirm')}
                 </button>
               </div>
             </motion.div>

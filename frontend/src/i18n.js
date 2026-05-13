@@ -42,7 +42,31 @@ const resources = {
         "support_desc": "Dedicated service",
         "sale_title": "Tech Sale Hunt",
         "sale_desc": "Up to 50% off for Gaming Laptops this week.",
-        "view_now": "View Now"
+        "view_now": "View Now",
+        "category_title": "Product Categories",
+        "category_subtitle": "Select the product type you are interested in to start shopping",
+        "bestseller_laptop_subtitle": "Collection of high-performance laptops at preferential prices",
+        "no_laptops": "No laptops found.",
+        "banners": {
+          "b1": {
+            "title": "GAMING GEAR",
+            "subtitle": "Break the Limit",
+            "description": "Best equipment for professional gamers. Shocking discounts for accessories.",
+            "cta": "View Offers"
+          },
+          "b2": {
+            "title": "NEW TECHNOLOGY",
+            "subtitle": "Peak Performance",
+            "description": "Explore the latest Laptops and Smartphones with discounts up to 30%.",
+            "cta": "Buy Now"
+          },
+          "b3": {
+            "title": "APPLE ECOSYSTEM",
+            "subtitle": "Luxury & Class",
+            "description": "Experience the perfect Apple ecosystem. Support 0% installment.",
+            "cta": "Explore"
+          }
+        }
       },
       "cart": {
         "title": "Your Cart",
@@ -151,6 +175,42 @@ const resources = {
         "price_15_30m": "15 - 30M",
         "price_30_50m": "30 - 50M",
         "price_over_50m": "Over 50M"
+      },
+      "checkout": {
+        "title": "Order Confirmation",
+        "product_info": "Product Information",
+        "brand": "Brand",
+        "quantity": "Quantity",
+        "delivery_info": "Delivery Information",
+        "address_label": "Shipping Address",
+        "address_placeholder": "Street, ward/commune, district/city...",
+        "shipping_hint": "Free shipping for this order. Estimated delivery time: 2-4 business days.",
+        "payment_method": "Payment Method",
+        "cod": "Cash on Delivery (COD)",
+        "zalopay": "Pay via ZaloPay / ATM / QR",
+        "card": "International Credit Card (Visa/Master)",
+        "zalopay_hint": "Redirect to ZaloPay secure payment gateway",
+        "recommended": "Recommended",
+        "summary": "Cost Summary",
+        "voucher_placeholder": "Voucher code...",
+        "apply": "Apply",
+        "voucher_applied": "Code applied",
+        "subtotal": "Product Value",
+        "discount": "Discount",
+        "shipping": "Shipping Fee",
+        "total": "Total Payment",
+        "processing": "Processing...",
+        "pay_zalopay": "Pay with ZaloPay",
+        "confirm_order": "Confirm Order"
+      },
+      "cart_history": {
+        "subtitle": "Manage and track the devices you've ordered.",
+        "empty": "No orders yet",
+        "empty_desc": "The devices you order will appear here for easy tracking.",
+        "continue_shopping": "Continue Shopping",
+        "start_shopping": "Start Shopping Now",
+        "confirm_delete": "Confirm Delete",
+        "delete_desc": "Are you sure you want to remove this order from your list?"
       }
     }
   },
@@ -192,7 +252,31 @@ const resources = {
         "support_desc": "Tận tâm & chuyên nghiệp",
         "sale_title": "Săn Sale Công Nghệ",
         "sale_desc": "Giảm tới 50% cho các dòng Laptop Gaming trong tuần lễ khai trương.",
-        "view_now": "Xem ngay"
+        "view_now": "Xem ngay",
+        "category_title": "Danh mục sản phẩm",
+        "category_subtitle": "Chọn loại sản phẩm bạn quan tâm để bắt đầu mua sắm",
+        "bestseller_laptop_subtitle": "Tổng hợp các dòng Laptop hiệu năng cao với mức giá ưu đãi",
+        "no_laptops": "Chưa có sản phẩm Laptop nào được tìm thấy.",
+        "banners": {
+          "b1": {
+            "title": "GAMING GEAR",
+            "subtitle": "Bứt Phá Giới Hạn",
+            "description": "Trang bị tốt nhất cho game thủ chuyên nghiệp. Giảm giá sốc cho phụ kiện.",
+            "cta": "Xem ưu đãi"
+          },
+          "b2": {
+            "title": "CÔNG NGHỆ MỚI",
+            "subtitle": "Đỉnh Cao Hiệu Năng",
+            "description": "Khám phá các dòng Laptop và Smartphone mới nhất với ưu đãi lên tới 30%.",
+            "cta": "Mua ngay"
+          },
+          "b3": {
+            "title": "APPLE ECOSYSTEM",
+            "subtitle": "Sang Trọng & Đẳng Cấp",
+            "description": "Trải nghiệm hệ sinh thái Apple hoàn hảo. Hỗ trợ trả góp 0%.",
+            "cta": "Khám phá"
+          }
+        }
       },
       "cart": {
         "title": "Giỏ hàng",
@@ -301,6 +385,42 @@ const resources = {
         "price_15_30m": "15 - 30 triệu",
         "price_30_50m": "30 - 50 triệu",
         "price_over_50m": "Trên 50 triệu"
+      },
+      "checkout": {
+        "title": "Xác nhận đơn hàng",
+        "product_info": "Thông tin sản phẩm",
+        "brand": "Thương hiệu",
+        "quantity": "Số lượng",
+        "delivery_info": "Thông tin giao hàng",
+        "address_label": "Địa chỉ nhận hàng",
+        "address_placeholder": "Số nhà, tên đường, phường/xã, quận/huyện...",
+        "shipping_hint": "Miễn phí vận chuyển cho đơn hàng này. Thời gian giao hàng dự kiến từ 2-4 ngày làm việc.",
+        "payment_method": "Phương thức thanh toán",
+        "cod": "Thanh toán khi nhận hàng (COD)",
+        "zalopay": "Thanh toán qua ZaloPay / Thẻ ATM / QR",
+        "card": "Thẻ tín dụng quốc tế (Visa/Master)",
+        "zalopay_hint": "Chuyển hướng đến cổng thanh toán an toàn ZaloPay",
+        "recommended": "Khuyên dùng",
+        "summary": "Tóm tắt chi phí",
+        "voucher_placeholder": "Mã giảm giá...",
+        "apply": "Áp dụng",
+        "voucher_applied": "Đã áp dụng mã",
+        "subtotal": "Giá trị sản phẩm",
+        "discount": "Giảm giá",
+        "shipping": "Phí vận chuyển",
+        "total": "Tổng thanh toán",
+        "processing": "Đang xử lý...",
+        "pay_zalopay": "Thanh toán với ZaloPay",
+        "confirm_order": "Xác nhận đặt hàng"
+      },
+      "cart_history": {
+        "subtitle": "Quản lý và theo dõi các thiết bị bạn đã đặt mua.",
+        "empty": "Chưa có đơn hàng nào",
+        "empty_desc": "Các thiết bị bạn đặt mua sẽ xuất hiện tại đây để dễ dàng theo dõi.",
+        "continue_shopping": "Tiếp tục mua sắm",
+        "start_shopping": "Bắt đầu mua sắm ngay",
+        "confirm_delete": "Xác nhận xóa",
+        "delete_desc": "Bạn có chắc chắn muốn xóa đơn hàng này khỏi danh sách không?"
       }
     }
   }

@@ -3,8 +3,10 @@ import { typeOfProductData } from '../assets/assets';
 import { useNavigate } from 'react-router-dom';
 import SectionHeader from './SectionHeader';
 import { AppContext } from '../context/AppContext';
+import { useTranslation } from 'react-i18next';
 
 const TypeOfDevice = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { setSearch } = useContext(AppContext);
 
@@ -17,8 +19,8 @@ const TypeOfDevice = () => {
   return (
     <section className="section-sm" id="type">
       <SectionHeader 
-        title="Danh mục sản phẩm" 
-        subtitle="Chọn loại sản phẩm bạn quan tâm để bắt đầu mua sắm"
+        title={t('home.category_title')} 
+        subtitle={t('home.category_subtitle')}
       />
       
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">

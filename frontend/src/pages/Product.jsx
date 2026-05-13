@@ -211,10 +211,10 @@ const Product = () => {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
             <div>
               <h1 className="text-2xl font-black text-neutral-900">
-                {search ? `Tìm kiếm: "${search}"` : 'Tất cả sản phẩm'}
+                {search ? `${t('common.search')}: "${search}"` : t('common.all_products')}
               </h1>
               <p className="text-sm text-neutral-500 mt-1">
-                Hiển thị {filterPro.filter(i => !showBsl || i.bestseller).length} kết quả
+                {t('common.results', { count: filterPro.filter(i => !showBsl || i.bestseller).length })}
               </p>
             </div>
 
@@ -223,7 +223,7 @@ const Product = () => {
                 onClick={() => setShowMobileFilter(true)}
                 className="lg:hidden flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-white border border-neutral-200 rounded-xl text-sm font-bold shadow-sm"
               >
-                <SlidersHorizontal className="w-4 h-4" /> Lọc
+                <SlidersHorizontal className="w-4 h-4" /> {t('common.filter')}
               </button>
 
               <select
@@ -244,23 +244,23 @@ const Product = () => {
           {(category.length > 0 || brand.length > 0 || priceRange || showBsl) && (
             <div className="flex flex-wrap gap-2 mb-6">
               {category.map(cat => (
-                <span key={cat} className="badge-primary px-3 py-1 flex items-center gap-2">
+                <span key={cat} className="badge-primary px-3 py-1 flex items-center gap-2 text-[10px]">
                   {cat} <X className="w-3 h-3 cursor-pointer" onClick={() => toggleCategory(cat)} />
                 </span>
               ))}
               {brand.map(br => (
-                <span key={br} className="badge-primary px-3 py-1 flex items-center gap-2">
+                <span key={br} className="badge-primary px-3 py-1 flex items-center gap-2 text-[10px]">
                   {br} <X className="w-3 h-3 cursor-pointer" onClick={() => toggleBrand(br)} />
                 </span>
               ))}
               {priceRange && (
-                <span className="badge-primary px-3 py-1 flex items-center gap-2">
-                  Giá: {priceRange.label} <X className="w-3 h-3 cursor-pointer" onClick={() => setPriceRange(null)} />
+                <span className="badge-primary px-3 py-1 flex items-center gap-2 text-[10px]">
+                  {t('filter.price_range')}: {priceRange.label} <X className="w-3 h-3 cursor-pointer" onClick={() => setPriceRange(null)} />
                 </span>
               )}
               {showBsl && (
-                <span className="badge bg-amber-100 text-amber-700 border border-amber-200 px-3 py-1 flex items-center gap-2">
-                  Bán chạy <X className="w-3 h-3 cursor-pointer" onClick={() => setShowBsl(false)} />
+                <span className="badge bg-amber-100 text-amber-700 border border-amber-200 px-3 py-1 flex items-center gap-2 text-[10px]">
+                  {t('common.bestseller')} <X className="w-3 h-3 cursor-pointer" onClick={() => setShowBsl(false)} />
                 </span>
               )}
             </div>
@@ -282,9 +282,9 @@ const Product = () => {
               <div className="w-20 h-20 bg-neutral-50 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Filter className="w-10 h-10 text-neutral-300" />
               </div>
-              <h3 className="text-lg font-bold text-neutral-800">Không tìm thấy sản phẩm</h3>
-              <p className="text-neutral-500 mt-2">Hãy thử thay đổi bộ lọc hoặc từ khóa tìm kiếm của bạn.</p>
-              <button onClick={handleClearFilter} className="btn-primary mt-6 px-8 rounded-full">Xóa tất cả bộ lọc</button>
+              <h3 className="text-lg font-bold text-neutral-800">{t('common.no_products')}</h3>
+              <p className="text-neutral-500 mt-2">{t('common.filter_empty_desc')}</p>
+              <button onClick={handleClearFilter} className="btn-primary mt-6 px-8 rounded-full">{t('common.clear_filter')}</button>
             </div>
           )}
         </div>
@@ -296,7 +296,7 @@ const Product = () => {
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowMobileFilter(false)} />
           <div className="absolute right-0 top-0 bottom-0 w-[85%] max-w-xs bg-white shadow-2xl p-6 flex flex-col animate-fade-in">
             <div className="flex items-center justify-between mb-8">
-              <h3 className="text-xl font-black">Bộ lọc</h3>
+              <h3 className="text-xl font-black">{t('common.filter')}</h3>
               <button onClick={() => setShowMobileFilter(false)} className="p-2 rounded-xl hover:bg-neutral-100">
                 <X className="w-6 h-6 text-neutral-500" />
               </button>
@@ -311,7 +311,7 @@ const Product = () => {
               />
             </div>
             <button onClick={() => setShowMobileFilter(false)} className="btn-primary w-full mt-6 rounded-xl py-4 font-bold">
-              Xem kết quả
+              {t('common.view_now')}
             </button>
           </div>
         </div>
