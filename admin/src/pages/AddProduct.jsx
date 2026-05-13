@@ -6,16 +6,37 @@ import { assets } from '../assets/assets';
 
 const AddProduct = () => {
   const [productImg, setProductImg] = useState(false);
+  const [additionalImages, setAdditionalImages] = useState([]);
   const [name, setName] = useState('');
   const [brand, setBrand] = useState('');
   const [price, setPrice] = useState('');
-  const [category, setCategory] = useState('Laptop');
+  const [category, setCategory] = useState('');
+  const [categories, setCategories] = useState([]);
   const [description, setDescription] = useState('');
   const [stock, setStock] = useState('');
   const [specifications, setSpecifications] = useState(JSON.stringify([{ key: '', value: '' }]));
   const [isLoading, setIsLoading] = useState(false);
 
   const { backendurl, aToken } = useContext(AdminContext);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const { data } = await axios.get(`${backendurl}/api/admin/categories`, { headers: { aToken } });
+        if (data.success) {
+          setCategories(data.categories);
+          if (data.categories.length > 0) {
+            setCategory(data.categories[0].CategoryName);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
+    if (aToken) {
+      fetchCategories();
+    }
+  }, [aToken, backendurl]);
 
   const onSubmitHandler = async (event) => {
     event.preventDefault();
@@ -28,6 +49,11 @@ const AddProduct = () => {
 
       const formData = new FormData();
       formData.append('image', productImg);
+      
+      additionalImages.forEach((img) => {
+        formData.append('images', img);
+      });
+
       formData.append('name', name);
       formData.append('brand', brand);
       formData.append('price', Number(price));
@@ -53,6 +79,7 @@ const AddProduct = () => {
       if (data.success) {
         toast.success(data.message + ' Product added');
         setProductImg(false);
+        setAdditionalImages([]);
         setName('');
         setBrand('');
         setPrice('');
@@ -91,22 +118,53 @@ const AddProduct = () => {
     }
   };
 
-  const categories = ["Laptop", "Smartphone", "Smartwatch", "PcPrinter", "Accessory", "Tablet"];
 
   return (
     <form onSubmit={onSubmitHandler} className='m-5 w-full'>
       <p className='my-3 text-lg font-medium'>Add Product</p>
       <div className='px-8 py-8 bg-white border rounded w-full max-w-4xl max-h-[80vh] overflow-y-scroll'>
-        <div className='flex items-center gap-4 mb-8 text-gray-700'>
-          <label htmlFor='product-img'>
-            <img
-              className='w-16 bg-gray-100 rounded-full cursor-pointer'
-              src={productImg ? URL.createObjectURL(productImg) : assets.upload_product}
-              alt=""
-            />
-          </label>
-          <input onChange={(e) => setProductImg(e.target.files[0])} type='file' id='product-img' hidden />
-          <p>Upload product<br />image</p>
+        <div className='flex flex-wrap gap-4 mb-8 text-gray-700'>
+          <div className='flex flex-col items-center gap-2'>
+            <p className='text-sm font-medium'>Main Image</p>
+            <label htmlFor='product-img'>
+              <img
+                className='w-20 h-20 bg-gray-100 rounded-lg cursor-pointer object-cover border-2 border-dashed border-gray-300'
+                src={productImg ? URL.createObjectURL(productImg) : assets.upload_product}
+                alt=""
+              />
+            </label>
+            <input onChange={(e) => setProductImg(e.target.files[0])} type='file' id='product-img' hidden />
+          </div>
+
+          <div className='flex flex-col gap-2'>
+            <p className='text-sm font-medium'>Additional Images (Max 5)</p>
+            <div className='flex gap-2 flex-wrap'>
+              {additionalImages.map((img, index) => (
+                <div key={index} className='relative'>
+                   <img src={URL.createObjectURL(img)} className='w-20 h-20 object-cover rounded-lg' alt="additional" />
+                   <button 
+                    type="button"
+                    onClick={() => setAdditionalImages(prev => prev.filter((_, i) => i !== index))}
+                    className='absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs'
+                   >×</button>
+                </div>
+              ))}
+              {additionalImages.length < 5 && (
+                <label className='w-20 h-20 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200 flex items-center justify-center cursor-pointer hover:bg-gray-100 transition-colors'>
+                  <span className='text-2xl text-gray-400'>+</span>
+                  <input 
+                    type='file' 
+                    multiple 
+                    hidden 
+                    onChange={(e) => {
+                      const files = Array.from(e.target.files);
+                      setAdditionalImages(prev => [...prev, ...files].slice(0, 5));
+                    }} 
+                  />
+                </label>
+              )}
+            </div>
+          </div>
         </div>
 
         <div className='flex flex-col gap-4 text-gray-800'>
@@ -127,9 +185,14 @@ const AddProduct = () => {
 
           <div className='flex flex-col gap-1'>
             <p>Category</p>
-            <select onChange={(e) => setCategory(e.target.value)} value={category}>
-              {categories.map((item, i) => (
-                <option key={i} value={item}>{item}</option>
+            <select 
+              onChange={(e) => setCategory(e.target.value)} 
+              value={category}
+              className='border rounded px-3 py-2'
+            >
+              <option value="">Select Category</option>
+              {categories.map((item) => (
+                <option key={item.CategoryID} value={item.CategoryName}>{item.CategoryName}</option>
               ))}
             </select>
           </div>

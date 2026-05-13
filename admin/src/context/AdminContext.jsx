@@ -219,6 +219,35 @@ const AdminContextProvider = (props) => {
             toast.error('Error sending notification');
         }
     };
+    const getAllUsers = async () => {
+        try {
+            const { data } = await axios.get(backendurl + '/api/admin/all-users', { headers: { aToken } });
+            if (data.success) {
+                return data.users;
+            } else {
+                toast.error(data.message);
+                return [];
+            }
+        } catch (error) {
+            toast.error(error.message);
+            return [];
+        }
+    };
+    const toggleUserStatus = async (userId, isActive) => {
+        try {
+            const { data } = await axios.post(backendurl + '/api/admin/toggle-user-status', { userId, isActive }, { headers: { aToken } });
+            if (data.success) {
+                toast.success(data.message);
+                return true;
+            } else {
+                toast.error(data.message);
+                return false;
+            }
+        } catch (error) {
+            toast.error(error.message);
+            return false;
+        }
+    };
     const value = {
         aToken, setAToken,
         backendurl, products, setProducts,
@@ -230,7 +259,8 @@ const AdminContextProvider = (props) => {
         changeBestsellerStatus,
         replies, setReplies, getAllReplies,
         replyComment, deleteReply, editReply, changeCartStatus,
-        notifyChangeStatusCart, createReplyNotification, deleteProduct
+        notifyChangeStatusCart, createReplyNotification, deleteProduct,
+        getAllUsers, toggleUserStatus
     }
 
     return (

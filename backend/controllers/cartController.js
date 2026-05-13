@@ -12,9 +12,14 @@ const removeCart = async (req, res) => {
       return res.status(400).json({ message: "cartId is required" });
     }
 
+<<<<<<< Updated upstream
     await cartModel.findByIdAndDelete(cartId);
 
     res.json({ success: true, message: "Giỏ hàng đã được xóa thành công" });
+=======
+    await cartModel.deleteById(cartId);
+    res.json({ success: true, message: "Đơn hàng đã được xóa thành công" });
+>>>>>>> Stashed changes
   } catch (error) {
     console.error("Lỗi khi xóa giỏ hàng:", error);
     return res.status(500).json({ success: false, message: "Lỗi server" });

@@ -102,20 +102,38 @@ const updateProduct = async (req, res) => {
       category,
       brand,
       description,
+      existingImages
     } = req.body;
-    const specs = JSON.parse(req.body.specifications);
-    const imageFile = req.file;
+    
+    const specs = req.body.specifications ? JSON.parse(req.body.specifications) : {};
+    const files = req.files;
+    
+    const mainImageFile = files && files.image ? files.image[0] : null;
+    const additionalImageFiles = files && files.images ? files.images : [];
 
-    let imageURL = req.body.image_url; // giữ ảnh cũ nếu không upload ảnh mới
+    let imageURL = req.body.image_url;
 
-    if (imageFile) {
-      const imageUpload = await cloudinary.uploader.upload(imageFile.path, {
+    if (mainImageFile) {
+      const imageUpload = await cloudinary.uploader.upload(mainImageFile.path, {
         resource_type: "image",
       });
       imageURL = imageUpload.secure_url;
     }
 
-    const product = await productModel.findByIdAndUpdate(
+    // Handle additional images
+    let finalImages = [];
+    if (existingImages) {
+        finalImages = Array.isArray(existingImages) ? existingImages : [existingImages];
+    }
+
+    if (additionalImageFiles.length > 0) {
+        for (const file of additionalImageFiles) {
+            const upload = await cloudinary.uploader.upload(file.path, { resource_type: "image" });
+            finalImages.push(upload.secure_url);
+        }
+    }
+
+    const updatedProduct = await productModel.findByIdAndUpdate(
       productId,
       {
         price,
@@ -125,18 +143,18 @@ const updateProduct = async (req, res) => {
         brand,
         description,
         image_url: imageURL,
+        images: finalImages,
         specifications: specs,
-      },
-      { new: true }
+      }
     );
 
-    if (!product) {
+    if (!updatedProduct) {
       return res
         .status(404)
         .json({ success: false, message: "Product not found" });
     }
 
-    return res.json({ success: true, data: product });
+    return res.json({ success: true, data: updatedProduct });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ success: false, message: "Server error" });

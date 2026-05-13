@@ -7,8 +7,9 @@ const Sidebar = ({ isVisible, setSidebarVisible }) => {
   const { search, setSearch } = useContext(AdminContext)
   const menuItems = [
     { path: '/', label: 'Dashboard' },
-    { path: '/all-carts', label: "Customer's Cart" },
-    { path: '/add-product', label: 'Add Products' },
+    { path: '/categories', label: 'Categories' },
+    { path: '/users', label: 'Users' },
+    { path: '/all-carts', label: 'Orders' },
     { path: '/products-list', label: 'List Products' },
     { path: '/comments-list', label: 'List Comments' },
     { path: '/notifications', label: 'Notifications' },

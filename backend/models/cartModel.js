@@ -160,6 +160,7 @@ const cartModel = {
         return await this.findById(id);
     },
 
+<<<<<<< Updated upstream
     async findByIdAndDelete(id) {
         const pool = await connectDB();
         const transaction = new sql.Transaction(pool);
@@ -175,6 +176,14 @@ const cartModel = {
             await transaction.rollback();
             throw error;
         }
+=======
+    async deleteById(id) {
+        const pool = await connectDB();
+        await pool.request()
+            .input('OrderID', sql.Int, id)
+            .query('DELETE FROM [Order] WHERE OrderID = @OrderID');
+        return true;
+>>>>>>> Stashed changes
     }
 };
 

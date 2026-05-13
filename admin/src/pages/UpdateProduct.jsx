@@ -5,14 +5,13 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { AdminContext } from '../context/AdminContext';
 
-const categories = ['Laptop', 'Smartphone', 'Smartwatch', 'Tablet', 'Accessory', 'PC, Printer'];
-
 const UpdateProduct = () => {
   const navigate = useNavigate();
   const { backendurl, aToken } = useContext(AdminContext);
   const location = useLocation();
   const prId = location.state?.productId;
 
+  const [categories, setCategories] = useState([]);
   const [formData, setFormData] = useState({
     productId: prId,
     name: '',
@@ -28,6 +27,22 @@ const UpdateProduct = () => {
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const { data } = await axios.get(`${backendurl}/api/admin/categories`, { headers: { aToken } });
+        if (data.success) {
+          setCategories(data.categories);
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
+    if (aToken) {
+      fetchCategories();
+    }
+  }, [aToken, backendurl]);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -179,7 +194,7 @@ const UpdateProduct = () => {
           >
             <option value="">-- Select Category --</option>
             {categories.map((cat) => (
-              <option key={cat} value={cat}>{cat}</option>
+              <option key={cat.CategoryID} value={cat.CategoryName}>{cat.CategoryName}</option>
             ))}
           </select>
         </div>

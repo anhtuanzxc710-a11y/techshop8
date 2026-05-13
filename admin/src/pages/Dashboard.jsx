@@ -27,9 +27,13 @@ const Dashboard = () => {
 
   const stats = [
     { label: 'Total Revenue', value: `${new Intl.NumberFormat('vi-VN').format(dashData.totalRevenue)}₫`, icon: DollarSign, color: 'bg-emerald-500' },
-    { label: 'Successful Orders', value: dashData.totalSuccessfulOrders, icon: ShoppingBag, color: 'bg-indigo-500' },
-    { label: 'Total Users', value: dashData.users.length, icon: Users, color: 'bg-amber-500' },
-    { label: 'Comments', value: dashData.qcomments, icon: MessageSquare, color: 'bg-rose-500' },
+    { label: 'Total Orders', value: dashData.totalOrders || 0, icon: ShoppingBag, color: 'bg-indigo-500' },
+    { label: 'Processed Orders', value: dashData.processedOrders || 0, icon: ShoppingBag, color: 'bg-blue-500' },
+    { label: 'Unprocessed Orders', value: dashData.unprocessedOrders || 0, icon: ShoppingBag, color: 'bg-orange-500' },
+    { label: 'Total Users', value: dashData.users?.length || 0, icon: Users, color: 'bg-amber-500' },
+    { label: 'Comments', value: dashData.qcomments || 0, icon: MessageSquare, color: 'bg-rose-500' },
+    { label: 'Low Stock Alerts', value: dashData.lowStockCount || 0, icon: TrendingUp, color: 'bg-red-500' },
+    { label: 'Active Vouchers', value: `${dashData.voucherStats?.activeVouchers || 0} / ${dashData.voucherStats?.totalVouchers || 0}`, icon: DollarSign, color: 'bg-teal-500' },
   ]
 
   // Monthly Revenue Chart Data

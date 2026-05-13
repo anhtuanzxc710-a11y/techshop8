@@ -14,6 +14,8 @@ import UpdateProduct from './pages/UpdateProduct'
 import Notifications from './pages/Notifications'
 import Vouchers from './pages/Vouchers'
 import AddVoucher from './pages/AddVoucher'
+import Categories from './pages/Categories'
+import Users from './pages/Users'
 import 'react-toastify/dist/ReactToastify.css'
 import 'tailwindcss/tailwind.css'
 
@@ -29,6 +31,8 @@ const App = () => {
         <Sidebar isVisible={isSidebarVisible} setSidebarVisible={setSidebarVisible} />
         <Routes>
           <Route path="/" element={<Dashboard />} />
+          <Route path="/categories" element={<Categories />} />
+          <Route path="/users" element={<Users />} />
           <Route path="/products-list" element={<ProductsList />} />
           <Route path="/all-carts" element={<AllCarts />} />
           <Route path="/comments-list" element={<Comments />} />

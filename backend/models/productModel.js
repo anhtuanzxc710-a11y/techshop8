@@ -122,6 +122,17 @@ const productModel = {
 
             const productId = result.recordset[0].ProductID;
 
+            // Handle multiple images
+            if (data.images && data.images.length > 0) {
+                for (const imgUrl of data.images) {
+                    const imgReq = new sql.Request(transaction);
+                    await imgReq
+                        .input('ProductID', sql.Int, productId)
+                        .input('ImageURL', sql.NVarChar, imgUrl)
+                        .query(`INSERT INTO ProductImage (ProductID, ImageURL) VALUES (@ProductID, @ImageURL)`);
+                }
+            }
+
             if (data.specifications) {
                 for (const [key, value] of Object.entries(data.specifications)) {
                     const specReq = new sql.Request(transaction);

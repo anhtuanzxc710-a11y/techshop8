@@ -62,7 +62,7 @@ const AllCarts = () => {
 
   return (
     <div className='w-full max-w-6xl m-5'>
-      <p className='mb-3 text-lg font-medium'>All Carts</p>
+      <p className='mb-3 text-lg font-medium'>Orders Management</p>
       <div className='bg-white border rounded text-sm max-h-[80vh] min-h-[60vh] overflow-y-scroll'>
 
         {/* Header (Desktop only) */}

@@ -1,11 +1,15 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { AdminContext } from '../context/AdminContext';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { toast } from 'react-toastify';
+import { assets } from '../assets/assets';
 
 const ProductsList = () => {
   const navigate = useNavigate();
   const {
     aToken,
+    backendurl,
     changeAvailability,
     getProducts,
     products,
@@ -17,8 +21,22 @@ const ProductsList = () => {
     deleteProduct
   } = useContext(AdminContext);
 
-  const [showModal, setShowModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+
+  // Add Product State
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [productImg, setProductImg] = useState(false);
+  const [additionalImages, setAdditionalImages] = useState([]);
+  const [name, setName] = useState('');
+  const [brand, setBrand] = useState('');
+  const [price, setPrice] = useState('');
+  const [category, setCategory] = useState('');
+  const [categories, setCategories] = useState([]);
+  const [description, setDescription] = useState('');
+  const [stock, setStock] = useState('');
+  const [specifications, setSpecifications] = useState(JSON.stringify([{ key: '', value: '' }]));
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleNavigate = (item) => {
     navigate('/update-product', {
@@ -46,9 +64,27 @@ const ProductsList = () => {
         console.error('Error fetching products:', error);
       }
     };
-
     fetchProducts();
   }, [aToken]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const { data } = await axios.get(`${backendurl}/api/admin/categories`, { headers: { aToken } });
+        if (data.success) {
+          setCategories(data.categories);
+          if (data.categories.length > 0) {
+            setCategory(data.categories[0].CategoryName);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
+    if (aToken && backendurl) {
+      fetchCategories();
+    }
+  }, [aToken, backendurl]);
 
   useEffect(() => {
     if (!search) {
@@ -68,92 +104,371 @@ const ProductsList = () => {
     if (selectedProduct) {
       await deleteProduct(selectedProduct._id);
       setProducts((prev) => prev.filter((p) => p._id !== selectedProduct._id));
-      setShowModal(false);
+      setShowDeleteModal(false);
       setSelectedProduct(null);
+    }
+  };
+
+  const onAddProductHandler = async (event) => {
+    event.preventDefault();
+    setIsLoading(true);
+    try {
+      if (!productImg) {
+        setIsLoading(false);
+        return toast.error('Image not selected');
+      }
+
+      const formData = new FormData();
+      formData.append('image', productImg);
+      additionalImages.forEach((img) => formData.append('images', img));
+      formData.append('name', name);
+      formData.append('brand', brand);
+      formData.append('price', Number(price));
+      formData.append('category', category);
+      formData.append('description', description);
+      formData.append('stock_quantity', Number(stock));
+
+      const specificationsObj = {};
+      JSON.parse(specifications).forEach((item) => {
+        if (item.key.trim() && item.value.trim()) {
+          specificationsObj[item.key] = item.value;
+        }
+      });
+      formData.append('specifications', JSON.stringify(specificationsObj));
+
+      const { data } = await axios.post(
+        backendurl + '/api/admin/add-product',
+        formData,
+        { headers: { aToken } }
+      );
+
+      if (data.success) {
+        toast.success('Product added successfully');
+        setShowAddModal(false);
+        // Reset form
+        setProductImg(false);
+        setAdditionalImages([]);
+        setName('');
+        setBrand('');
+        setPrice('');
+        setDescription('');
+        setStock('');
+        setSpecifications(JSON.stringify([{ key: '', value: '' }]));
+        // Refresh list
+        await getProducts();
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSpecificationChange = (index, field, value) => {
+    const updated = JSON.parse(specifications);
+    updated[index][field] = value;
+    setSpecifications(JSON.stringify(updated));
+  };
+
+  const addSpecificationField = () => {
+    const updated = JSON.parse(specifications);
+    updated.push({ key: '', value: '' });
+    setSpecifications(JSON.stringify(updated));
+  };
+
+  const removeSpecificationField = (index) => {
+    const updated = JSON.parse(specifications);
+    if (updated.length > 1) {
+      updated.splice(index, 1);
+      setSpecifications(JSON.stringify(updated));
     }
   };
 
   return (
     <div className="m-5 max-h-[90vh] overflow-y-scroll">
-      <h1 className="text-lg font-medium">All Products</h1>
+      <div className="flex justify-between items-center mb-5">
+        <h1 className="text-xl font-bold text-gray-800">All Products</h1>
+        <button
+          onClick={() => setShowAddModal(!showAddModal)}
+          className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-bold shadow-md transition-all ${showAddModal
+              ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              : 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg'
+            }`}
+        >
+          {showAddModal ? 'Close' : 'Add'}
+        </button>
+      </div>
+
+      {/* Add Product Collapsible Section */}
+      {showAddModal && (
+        <div className="mb-10 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden animate-slideDown">
+          <div className="p-6 bg-gray-50 border-b">
+            <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+              <span className="bg-primary w-2 h-6 rounded-full"></span>
+              Add New Product
+            </h2>
+          </div>
+
+          <form onSubmit={onAddProductHandler} className="p-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+              {/* Left Column: Images */}
+              <div className="space-y-8">
+                <div>
+                  <p className="text-sm font-bold text-gray-700 mb-4">Main Product Image</p>
+                  <label htmlFor="product-img-inline" className="cursor-pointer block group">
+                    <div className="relative w-full h-64 bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl flex items-center justify-center overflow-hidden group-hover:border-primary group-hover:bg-indigo-50/30 transition-all">
+                      {productImg ? (
+                        <img src={URL.createObjectURL(productImg)} className="w-full h-full object-contain p-4" alt="preview" />
+                      ) : (
+                        <div className="text-center">
+                          <div className="w-16 h-16 bg-white rounded-full shadow-sm flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                            <img src={assets.upload_product} className="w-8 opacity-60" alt="" />
+                          </div>
+                          <p className="text-sm font-medium text-gray-500">Click to upload main thumbnail</p>
+                          <p className="text-xs text-gray-400 mt-1">PNG, JPG up to 10MB</p>
+                        </div>
+                      )}
+                    </div>
+                  </label>
+                  <input onChange={(e) => setProductImg(e.target.files[0])} type="file" id="product-img-inline" hidden />
+                </div>
+
+                <div>
+                  <p className="text-sm font-bold text-gray-700 mb-4">Gallery Images (Max 5)</p>
+                  <div className="flex gap-4 flex-wrap">
+                    {additionalImages.map((img, index) => (
+                      <div key={index} className="relative w-24 h-24 group">
+                        <img src={URL.createObjectURL(img)} className="w-full h-full object-cover rounded-xl border border-gray-100 shadow-sm" alt="" />
+                        <button
+                          type="button"
+                          onClick={() => setAdditionalImages(prev => prev.filter((_, i) => i !== index))}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-all shadow-lg hover:scale-110"
+                        >×</button>
+                      </div>
+                    ))}
+                    {additionalImages.length < 5 && (
+                      <label className="w-24 h-24 bg-white rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-indigo-50/30 transition-all group">
+                        <span className="text-3xl text-gray-300 group-hover:text-primary transition-colors">+</span>
+                        <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Add</span>
+                        <input
+                          type="file" multiple hidden
+                          onChange={(e) => {
+                            const files = Array.from(e.target.files);
+                            setAdditionalImages(prev => [...prev, ...files].slice(0, 5));
+                          }}
+                        />
+                      </label>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column: Information */}
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-gray-700">Product Name</label>
+                  <input onChange={(e) => setName(e.target.value)} value={name} className="w-full border border-gray-200 rounded-xl px-5 py-3 outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all bg-gray-50/30" type="text" placeholder="e.g. MacBook Pro M3 Max" required />
+                </div>
+
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-gray-700">Brand</label>
+                    <input onChange={(e) => setBrand(e.target.value)} value={brand} className="w-full border border-gray-200 rounded-xl px-5 py-3 outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all bg-gray-50/30" type="text" placeholder="e.g. Apple" required />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-gray-700">Category</label>
+                    <select onChange={(e) => setCategory(e.target.value)} value={category} className="w-full border border-gray-200 rounded-xl px-5 py-3 outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all bg-gray-50/30">
+                      {categories.map((item) => (
+                        <option key={item.CategoryID} value={item.CategoryName}>{item.CategoryName}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-gray-700">Price (VND)</label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">₫</span>
+                      <input onChange={(e) => setPrice(e.target.value)} value={price} className="w-full border border-gray-200 rounded-xl pl-10 pr-5 py-3 outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all bg-gray-50/30" type="number" placeholder="0" required />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-gray-700">Stock Units</label>
+                    <input onChange={(e) => setStock(e.target.value)} value={stock} className="w-full border border-gray-200 rounded-xl px-5 py-3 outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all bg-gray-50/30" type="number" placeholder="0" required />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-gray-700">Product Description</label>
+                  <textarea onChange={(e) => setDescription(e.target.value)} value={description} className="w-full border border-gray-200 rounded-xl px-5 py-4 outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all bg-gray-50/30 min-h-[140px]" placeholder="Share more details about the product..." required />
+                </div>
+              </div>
+            </div>
+
+            {/* Specifications Section */}
+            <div className="mt-12 pt-8 border-t border-gray-100">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-md font-bold text-gray-800 flex items-center gap-2">
+                  <span className="bg-green-500 w-2 h-6 rounded-full"></span>
+                  Specifications
+                </h3>
+                <button
+                  type="button" onClick={addSpecificationField}
+                  className="text-primary text-sm font-bold hover:bg-indigo-50 px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+                >
+                  <span>+</span> Add Row
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {JSON.parse(specifications).map((spec, index) => (
+                  <div key={index} className="flex items-center gap-3 bg-gray-50/50 p-4 rounded-xl border border-gray-100 animate-fadeIn">
+                    <input
+                      type="text" placeholder="Key (e.g. CPU)" value={spec.key}
+                      onChange={(e) => handleSpecificationChange(index, 'key', e.target.value)}
+                      className="flex-1 bg-white border border-gray-200 rounded-lg px-4 py-2 text-sm outline-none focus:border-primary"
+                    />
+                    <input
+                      type="text" placeholder="Value (e.g. M3)" value={spec.value}
+                      onChange={(e) => handleSpecificationChange(index, 'value', e.target.value)}
+                      className="flex-1 bg-white border border-gray-200 rounded-lg px-4 py-2 text-sm outline-none focus:border-primary"
+                    />
+                    <button
+                      type="button" onClick={() => removeSpecificationField(index)}
+                      className="w-8 h-8 flex items-center justify-center text-red-400 hover:bg-red-50 hover:text-red-500 rounded-full transition-all"
+                    >&times;</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-10 flex justify-end gap-4">
+              <button
+                type="button" onClick={() => setShowAddModal(false)}
+                className="px-8 py-3.5 text-gray-500 font-bold hover:bg-gray-100 rounded-xl transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit" disabled={isLoading}
+                className="px-12 py-3.5 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-100 hover:shadow-blue-200 hover:bg-blue-700 disabled:opacity-50 transition-all flex items-center gap-3"
+              >
+                {isLoading ? (
+                  <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Processing...</>
+                ) : (
+                  'Add'
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
       <div className="w-full flex flex-wrap gap-4 pt-5 gap-y-6">
         {filterProducts.map((item, index) => (
-          <div className="border border-indigo-200 rounded-xl max-w-52 overflow-hidden group" key={index}>
-            <img
-              onClick={() => handleNavigate(item)}
-              className="bg-indigo-50 group-hover:bg-primary transition-all duration-500 h-64 object-cover cursor-pointer"
-              src={item.image_url}
-              alt=""
-            />
+          <div className="bg-white border border-gray-100 rounded-2xl max-w-[210px] overflow-hidden group shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300" key={index}>
+            <div className="relative aspect-[4/5] overflow-hidden bg-gray-50">
+              <img
+                onClick={() => handleNavigate(item)}
+                className="w-full h-full object-cover cursor-pointer group-hover:scale-110 transition-transform duration-700"
+                src={item.image_url}
+                alt=""
+              />
+              <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button
+                  onClick={() => handleNavigate(item)}
+                  className="w-8 h-8 bg-white/90 backdrop-blur rounded-full flex items-center justify-center shadow-md hover:bg-primary hover:text-white transition-all"
+                >
+                  <span className="text-xs">✎</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setSelectedProduct(item);
+                    setShowDeleteModal(true);
+                  }}
+                  className="w-8 h-8 bg-white/90 backdrop-blur rounded-full flex items-center justify-center shadow-md hover:bg-red-500 hover:text-white transition-all"
+                >
+                  <span className="text-xs">&times;</span>
+                </button>
+              </div>
+            </div>
+
             <div className="p-4">
-              <p className="text-gray-600 font-bold text-lg">{item.name}</p>
-              <p className="text-zinc-600 text-sm">{item.category}</p>
-
-              <div className="mt-2 flex items-center gap-1 text-sm">
-                <input
-                  onChange={() => {
-                    changeAvailability(item._id);
-                    setProducts((prevProducts) =>
-                      prevProducts.map((p) =>
-                        p._id === item._id ? { ...p, available: !p.available } : p
-                      )
-                    );
-                  }}
-                  type="checkbox"
-                  checked={item.available}
-                />
-                <p>Available</p>
+              <p className="text-gray-800 font-bold text-sm line-clamp-1 mb-1">{item.name}</p>
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 bg-gray-50 px-2 py-0.5 rounded">{item.category}</span>
+                <span className="text-primary font-bold text-xs">{Number(item.price).toLocaleString()} ₫</span>
               </div>
 
-              <div className="mt-2 flex items-center gap-1 text-sm">
-                <input
-                  onChange={() => {
-                    changeBestsellerStatus(item._id);
-                    setProducts((prevProducts) =>
-                      prevProducts.map((p) =>
-                        p._id === item._id ? { ...p, bestseller: !p.bestseller } : p
-                      )
-                    );
-                  }}
-                  type="checkbox"
-                  checked={item.bestseller}
-                />
-                <p>Bestseller</p>
-              </div>
+              <div className="space-y-2 pt-2 border-t border-gray-50">
+                <label className="flex items-center justify-between cursor-pointer group/toggle">
+                  <span className="text-[11px] font-medium text-gray-500 group-hover/toggle:text-gray-700 transition-colors">Available</span>
+                  <div className="relative">
+                    <input
+                      onChange={() => {
+                        changeAvailability(item._id);
+                        setProducts((prevProducts) =>
+                          prevProducts.map((p) =>
+                            p._id === item._id ? { ...p, available: !p.available } : p
+                          )
+                        );
+                      }}
+                      type="checkbox"
+                      className="sr-only peer"
+                      checked={item.available}
+                    />
+                    <div className="w-8 h-4 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600"></div>
+                  </div>
+                </label>
 
-              <button
-                onClick={() => {
-                  setSelectedProduct(item);
-                  setShowModal(true);
-                }}
-                className="mt-2 text-red-500 text-sm hover:underline"
-              >
-                Xóa
-              </button>
+                <label className="flex items-center justify-between cursor-pointer group/toggle">
+                  <span className="text-[11px] font-medium text-gray-500 group-hover/toggle:text-gray-700 transition-colors">Bestseller</span>
+                  <div className="relative">
+                    <input
+                      onChange={() => {
+                        changeBestsellerStatus(item._id);
+                        setProducts((prevProducts) =>
+                          prevProducts.map((p) =>
+                            p._id === item._id ? { ...p, bestseller: !p.bestseller } : p
+                          )
+                        );
+                      }}
+                      type="checkbox"
+                      className="sr-only peer"
+                      checked={item.bestseller}
+                    />
+                    <div className="w-8 h-4 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-amber-400"></div>
+                  </div>
+                </label>
+              </div>
             </div>
           </div>
         ))}
       </div>
 
-      {showModal && selectedProduct && (
-        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-md w-[300px]">
-            <p className="text-center text-gray-700 mb-4">
-              Bạn muốn xóa sản phẩm <strong>{selectedProduct.name}</strong>?
-            </p>
-            <div className="flex justify-end gap-3">
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && selectedProduct && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+          <div className="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-sm animate-popIn border border-gray-100">
+            <div className="text-center">
+              <div className="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl shadow-inner animate-bounce">!</div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Delete Product?</h3>
+              <p className="text-gray-500 mb-8 leading-relaxed">
+                Are you sure you want to permanently remove <br /><span className="text-red-500 font-bold">"{selectedProduct.name}"</span>? This action cannot be undone.
+              </p>
+            </div>
+            <div className="flex gap-4">
               <button
-                onClick={() => setShowModal(false)}
-                className="px-3 py-1 text-sm bg-gray-300 rounded hover:bg-gray-400"
-              >
-                Hủy
-              </button>
+                onClick={() => setShowDeleteModal(false)}
+                className="flex-1 px-4 py-3.5 text-sm font-bold text-gray-500 bg-gray-100 rounded-2xl hover:bg-gray-200 transition-all"
+              >Cancel</button>
               <button
                 onClick={handleDelete}
-                className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
-              >
-                Xác nhận
-              </button>
+                className="flex-1 px-4 py-3.5 text-sm font-bold text-white bg-red-500 rounded-2xl hover:bg-red-600 shadow-lg shadow-red-200 transition-all active:scale-95"
+              >Yes, Delete</button>
             </div>
           </div>
         </div>

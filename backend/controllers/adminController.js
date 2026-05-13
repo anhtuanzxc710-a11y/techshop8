@@ -8,44 +8,52 @@ import { sql, connectDB } from "../config/database.js";
 // api add product
 const addProduct = async (req, res) => {
     try { 
-        const { name, price, description, category, stock_quantity,brand,specifications } = req.body;
-        const imageFile = req.file;
-        if (!imageFile) res.status(404).json({success:false,message:'image is required'})
-        // Kiểm tra xem đủ thông tin chưa
-        if (!name || !price || !category || !stock_quantity ||!brand ) {
+        const { name, price, description, category, stock_quantity, brand, specifications } = req.body;
+        const files = req.files;
+        
+        const imageFile = files.image ? files.image[0] : null;
+        const additionalImages = files.images || [];
+
+        if (!imageFile) return res.status(404).json({success:false,message:'Main image is required'});
+        
+        if (!name || !price || !category || !stock_quantity || !brand ) {
             return res.json({ success: false, message: "Missing product details" });
         }
 
-        // Kiểm tra giá và số lượng phải là số dương
         if (price <= 0) {
-            return res.json({ success: false, message: "Price must be positive and stock cannot be negative" });
+            return res.json({ success: false, message: "Price must be positive" });
         }
 
-        // Upload ảnh sản phẩm lên Cloudinary (nếu có)
-        let imageURL = "";
-        if (imageFile) {
-            const imageUpload = await cloudinary.uploader.upload(imageFile.path, { resource_type: "image" });
-            imageURL = imageUpload.secure_url;
+        // Upload main image
+        const imageUpload = await cloudinary.uploader.upload(imageFile.path, { resource_type: "image" });
+        const imageURL = imageUpload.secure_url;
+
+        // Upload additional images
+        const imagesURLs = [];
+        for (const file of additionalImages) {
+            const upload = await cloudinary.uploader.upload(file.path, { resource_type: "image" });
+            imagesURLs.push(upload.secure_url);
         }
 
         const productData = {
             name,
             price,
             description,
-            specifications:JSON.parse(specifications),
+            specifications: JSON.parse(specifications),
             category,
             brand,
             stock_quantity,
             image_url: imageURL,
+            images: imagesURLs,
             dateAdded: Date.now()
         };
 
         const newProduct = await productModel.create(productData);
 
-        res.json({ success: true, message: "Product added successfully",data:newProduct});
+        res.json({ success: true, message: "Product added successfully", data: newProduct });
         
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.json({ success: false, message: error.message });
     }
 };
@@ -66,6 +74,27 @@ const adminDashboard = async (req, res) => {
             totalRevenue: revResult.recordset[0].totalRevenue || 0,
             totalSuccessfulOrders: revResult.recordset[0].totalSuccessfulOrders || 0
         }];
+
+        const orderStatsResult = await pool.request()
+            .query(`
+                SELECT 
+                    COUNT(OrderID) as totalOrders,
+                    SUM(CASE WHEN OrderStatus = 'processing' THEN 1 ELSE 0 END) as unprocessedOrders,
+                    SUM(CASE WHEN OrderStatus IN ('shipped', 'delivered', 'confirmed') THEN 1 ELSE 0 END) as processedOrders
+                FROM [Order]
+            `);
+        const orderStats = orderStatsResult.recordset[0];
+
+        const lowStockResult = await pool.request()
+            .query('SELECT COUNT(ProductID) as lowStockCount FROM Product WHERE StockQuantity <= 10');
+        const lowStockCount = lowStockResult.recordset[0].lowStockCount || 0;
+
+        const voucherResult = await pool.request()
+            .query('SELECT COUNT(VoucherID) as totalVouchers, SUM(CASE WHEN IsActive = 1 THEN 1 ELSE 0 END) as activeVouchers FROM Voucher');
+        const voucherStats = {
+            totalVouchers: voucherResult.recordset[0].totalVouchers || 0,
+            activeVouchers: voucherResult.recordset[0].activeVouchers || 0
+        };
 
         const monthlyResult = await pool.request()
             .query('SELECT MONTH(CreatedAt) as _id, SUM(TotalAmount) as revenue FROM [Order] WHERE PaymentStatus = 1 GROUP BY MONTH(CreatedAt) ORDER BY _id ASC');
@@ -93,6 +122,11 @@ const adminDashboard = async (req, res) => {
           users,
           totalRevenue: revenueStats[0]?.totalRevenue || 0,
           totalSuccessfulOrders: revenueStats[0]?.totalSuccessfulOrders || 0,
+          totalOrders: orderStats.totalOrders || 0,
+          unprocessedOrders: orderStats.unprocessedOrders || 0,
+          processedOrders: orderStats.processedOrders || 0,
+          lowStockCount,
+          voucherStats,
           monthlyRevenue,
           topSellingProducts,
         };
@@ -210,6 +244,53 @@ const changeProductAvailability=async(req,res)=>{
         res.json({success:false,message:error.message})
     }
 }
+
+// User Management
+const getAllUsers = async (req, res) => {
+    try {
+        const users = await userModel.find({ role: 'Customer' });
+        res.json({ success: true, users });
+    } catch (error) {
+        console.error(error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
+const toggleUserStatus = async (req, res) => {
+    try {
+        const { userId, isActive } = req.body;
+        const pool = await connectDB();
+        await pool.request()
+            .input('UserID', sql.Int, userId)
+            .input('IsActive', sql.Bit, isActive ? 1 : 0)
+            .query('UPDATE [User] SET IsActive = @IsActive WHERE UserID = @UserID');
+        
+        res.json({ success: true, message: `User ${isActive ? 'activated' : 'blocked'} successfully` });
+    } catch (error) {
+        console.error(error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
+const getUserOrders = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const orders = await cartModel.find({ userId });
+        res.json({ success: true, orders });
+    } catch (error) {
+        console.error(error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
 export {
-    addProduct,getProducts,adminDashboard,loginAdmin,updateCart,changeProductAvailability
+    addProduct,
+    getProducts,
+    adminDashboard,
+    loginAdmin,
+    updateCart,
+    changeProductAvailability,
+    getAllUsers,
+    toggleUserStatus,
+    getUserOrders
 }
