@@ -12,6 +12,11 @@ const MyProfile = () => {
   const [isEdit, setIsEdit] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [changingPassword, setChangingPassword] = useState(false);
   const navigate = useNavigate();
 
   const updateProfileData = async () => {
@@ -38,6 +43,39 @@ const MyProfile = () => {
       }
     } catch (error) {
       toast.error("Lỗi khi cập nhật thông tin");
+    }
+  };
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      return toast.error("Mật khẩu mới không khớp!");
+    }
+    if (newPassword.length < 8) {
+      return toast.error("Mật khẩu mới phải có ít nhất 8 ký tự");
+    }
+
+    try {
+      setChangingPassword(true);
+      const { data } = await axios.post(
+        `${backendurl}/api/user/change-password`,
+        { oldPassword, newPassword },
+        { headers: { token } }
+      );
+
+      if (data.success) {
+        toast.success("Đổi mật khẩu thành công!");
+        setShowPasswordModal(false);
+        setOldPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error("Lỗi khi đổi mật khẩu");
+    } finally {
+      setChangingPassword(false);
     }
   };
 
@@ -108,6 +146,13 @@ const MyProfile = () => {
                     </button>
                   </div>
                 )}
+
+                <button
+                  onClick={() => setShowPasswordModal(true)}
+                  className="w-full py-3.5 text-primary font-bold text-sm hover:bg-primary-50 rounded-2xl transition-all flex items-center justify-center gap-2 border border-primary/20"
+                >
+                  <Edit3 className="w-4 h-4" /> Đổi mật khẩu
+                </button>
                 
                 <button
                   onClick={() => setShowConfirmModal(true)}
@@ -263,6 +308,79 @@ const MyProfile = () => {
                   Hủy bỏ
                 </button>
               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+      {/* Password Change Modal */}
+      <AnimatePresence>
+        {showPasswordModal && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setShowPasswordModal(false)}
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-white p-8 rounded-[40px] shadow-2xl w-full max-w-md relative z-10"
+            >
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-2xl font-black text-neutral-900">Đổi mật khẩu</h3>
+                <button onClick={() => setShowPasswordModal(false)} className="p-2 hover:bg-neutral-100 rounded-full transition-colors">
+                  <X className="w-6 h-6 text-neutral-400" />
+                </button>
+              </div>
+              
+              <form onSubmit={handleChangePassword} className="space-y-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-black text-neutral-400 uppercase tracking-widest ml-1">Mật khẩu cũ</label>
+                  <input
+                    type="password"
+                    required
+                    value={oldPassword}
+                    onChange={(e) => setOldPassword(e.target.value)}
+                    className="w-full px-4 py-3.5 bg-neutral-50 border border-neutral-200 rounded-2xl focus:ring-primary focus:border-primary transition-all text-sm font-medium"
+                    placeholder="••••••••"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-black text-neutral-400 uppercase tracking-widest ml-1">Mật khẩu mới</label>
+                  <input
+                    type="password"
+                    required
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="w-full px-4 py-3.5 bg-neutral-50 border border-neutral-200 rounded-2xl focus:ring-primary focus:border-primary transition-all text-sm font-medium"
+                    placeholder="••••••••"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-black text-neutral-400 uppercase tracking-widest ml-1">Xác nhận mật khẩu mới</label>
+                  <input
+                    type="password"
+                    required
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full px-4 py-3.5 bg-neutral-50 border border-neutral-200 rounded-2xl focus:ring-primary focus:border-primary transition-all text-sm font-medium"
+                    placeholder="••••••••"
+                  />
+                </div>
+                
+                <div className="pt-4">
+                  <button
+                    type="submit"
+                    disabled={changingPassword}
+                    className="w-full py-4 bg-primary text-white rounded-2xl font-black shadow-glow hover:bg-primary-600 transition-colors disabled:opacity-50"
+                  >
+                    {changingPassword ? "Đang xử lý..." : "Cập nhật mật khẩu"}
+                  </button>
+                </div>
+              </form>
             </motion.div>
           </div>
         )}

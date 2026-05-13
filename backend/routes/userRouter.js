@@ -6,6 +6,7 @@ import {
   updateProfile,
   verifyChangePassword,
   forgotPassword,
+  changePassword,
   verify,
   deleteUser,
 } from "../controllers/userController.js";
@@ -46,5 +47,6 @@ userRouter.get('/verify',verify)
 userRouter.post('/forgot-password',forgotPassword)
 userRouter.post('/verify-change-password',verifyChangePassword);
 userRouter.post('/delete-user',authUser,deleteUser)
+userRouter.post("/change-password", authUser, changePassword);
 userRouter.post('/callback',callback)
 export default userRouter;

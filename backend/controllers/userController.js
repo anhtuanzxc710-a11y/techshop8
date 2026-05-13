@@ -1,109 +1,110 @@
 import userModel from "../models/userModel.js";
 import validator from "validator";
 import bcrypt from "bcrypt";
-import {v2 as cloudinary} from 'cloudinary'
+import { v2 as cloudinary } from 'cloudinary'
 import jwt from "jsonwebtoken";
 import { addPendingForgot, getPendingForgot, removePendingForgot } from "../utils/pendingForgot.js";
 import { addPendingUser, getPendingUser, removePendingUser } from "../utils/pendingUser.js";
 import { sendEmail } from "../utils/sendEmail.js";
 
-const registerUser = async (req,res) =>{
-try {
-   
-    const {username,email,password}=req.body 
-    const data= await userModel.findOne({email});
-    if (data) return res.json({success:false,message:"Tài khoản email đã tồn tại !"})
-    if (!username || !email || !password){
-        return res.json({success:false,message:"Missing Details"}) // missing sth
+const registerUser = async (req, res) => {
+  try {
+
+    const { username, email, password } = req.body
+    const data = await userModel.findOne({ email });
+    if (data) return res.json({ success: false, message: "Tài khoản email đã tồn tại !" })
+    if (!username || !email || !password) {
+      return res.json({ success: false, message: "Missing Details" }) // missing sth
     }
     if (!validator.isEmail(email)) // invalid email
     {
-        return res.json({success:false,message:"Invalid email"})
+      return res.json({ success: false, message: "Invalid email" })
     }
-    if (password.length<8){  //weak password
-        return res.json({success:false,message:"Please enter strong password"}) 
+    if (password.length < 8) {  //weak password
+      return res.json({ success: false, message: "Please enter strong password" })
     }
-    console.log({username,email});
-    
+    console.log({ username, email });
+
     // HAShing USER PASSWORD
     const salt = await bcrypt.genSalt(10)
-    const hashedPassword=await bcrypt.hash(password,salt)
-    const userData={
-        name:username,
-        email,
-        password:hashedPassword
+    const hashedPassword = await bcrypt.hash(password, salt)
+    const userData = {
+      name: username,
+      email,
+      password: hashedPassword
     }
-    
+
     // Tạo user và lưu vào database trực tiếp
     const user = await userModel.create(userData);
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
 
-    return res.json({success:true, message:"Đăng ký thành công", token});
-    
-   
-} catch (error) {
-    console.log(error)
-    return res.json({success:false,message:"Lỗi đăng ký"});
-}}
+    return res.json({ success: true, message: "Đăng ký thành công", token });
 
-const verify = async (req,res) =>{
-    try {
-        const tokenGmail= req.query.tokenGmail;
-        if (!tokenGmail) return res.status(400).json({success:false,message:"Không thấy gmail!"})
-        const decoded = jwt.verify(tokenGmail, process.env.JWT_SECRET); // kiểm tra hạn 15 phút
-       
-        const email = decoded.email;
-        const userData=decoded.userData;
-        console.log({email,userData});
-        
-        const pending = getPendingUser(email);
+
+  } catch (error) {
+    console.log(error)
+    return res.json({ success: false, message: "Lỗi đăng ký" });
+  }
+}
+
+const verify = async (req, res) => {
+  try {
+    const tokenGmail = req.query.tokenGmail;
+    if (!tokenGmail) return res.status(400).json({ success: false, message: "Không thấy gmail!" })
+    const decoded = jwt.verify(tokenGmail, process.env.JWT_SECRET); // kiểm tra hạn 15 phút
+
+    const email = decoded.email;
+    const userData = decoded.userData;
+    console.log({ email, userData });
+
+    const pending = getPendingUser(email);
 
     if (!pending) {
       return res.status(400).send('Token đã hết hạn.');
     }
     console.log(pending.tokenGmail);
-    
-    if (pending.tokenGmail!==tokenGmail) return res.status(400).send('Token không có');
-        const user = await userModel.create(userData);
 
-        const token=jwt.sign({id:user._id},process.env.JWT_SECRET);
-        // Xóa khỏi pending
-        removePendingUser(email);
-        return res.json({success:true,token})
-    } catch (error) {
-        console.log(error)
-        return res.json({success:false,message:"Lỗi xác thực"});
-    }
+    if (pending.tokenGmail !== tokenGmail) return res.status(400).send('Token không có');
+    const user = await userModel.create(userData);
+
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+    // Xóa khỏi pending
+    removePendingUser(email);
+    return res.json({ success: true, token })
+  } catch (error) {
+    console.log(error)
+    return res.json({ success: false, message: "Lỗi xác thực" });
+  }
 }
 //api for forgot password
-const forgotPassword = async (req,res)=>{
-    try {
-        const email=req.body.email
-        if (!email) return res.json({success:false,message:"Không tìm thấy email"})
-        const userData = await userModel.findOne({email});
-        if (userData) delete userData.password;
-    
-        if (!userData) return res.json({success:false,message:"Không tồn tại email người dùng"});
-         const user_encode=jwt.sign({userId:userData._id},process.env.JWT_SECRET)
-         const verifyLink = `${process.env.FE_URL}/changePassword?user=${user_encode}&email=${email}`;
-        await sendEmail(email, 'Bạn đã thao tác đổi mật khẩu của tài khoản sử dụng email này trên website MinhGadget', `Nhấn vào đây để thao tác đổi mật khẩu: ${verifyLink}`);
-        addPendingForgot(email);
-        return res.json({succcess:true,message:"Check email để xác thực thay đổi mật khẩu"})
-    } catch (error) {
-        console.log(error);
-        return res.json({success:false,message:"Lỗi server!"});
-    }
+const forgotPassword = async (req, res) => {
+  try {
+    const email = req.body.email
+    if (!email) return res.json({ success: false, message: "Không tìm thấy email" })
+    const userData = await userModel.findOne({ email });
+    if (userData) delete userData.password;
+
+    if (!userData) return res.json({ success: false, message: "Không tồn tại email người dùng" });
+    const user_encode = jwt.sign({ userId: userData._id }, process.env.JWT_SECRET)
+    const verifyLink = `${process.env.FE_URL}/changePassword?user=${user_encode}&email=${email}`;
+    await sendEmail(email, 'Bạn đã thao tác đổi mật khẩu của tài khoản sử dụng email này trên website MinhGadget', `Nhấn vào đây để thao tác đổi mật khẩu: ${verifyLink}`);
+    addPendingForgot(email);
+    return res.json({ succcess: true, message: "Check email để xác thực thay đổi mật khẩu" })
+  } catch (error) {
+    console.log(error);
+    return res.json({ success: false, message: "Lỗi server!" });
+  }
 }
-const deleteUser = async (req,res)=>{
-    try {
-        const {userId}=req.body
-        if (!userId) return res.json({success:false,message:"user id not found !"});
-        await userModel.findByIdAndDelete(userId);
-        return res.json({success:true,message:"Delete user successfully !"})
-    } catch (error) {
-        console.log(error);
-        return res.json({success:false,message:"Server error!"})
-    }
+const deleteUser = async (req, res) => {
+  try {
+    const { userId } = req.body
+    if (!userId) return res.json({ success: false, message: "user id not found !" });
+    await userModel.findByIdAndDelete(userId);
+    return res.json({ success: true, message: "Delete user successfully !" })
+  } catch (error) {
+    console.log(error);
+    return res.json({ success: false, message: "Server error!" })
+  }
 }
 const verifyChangePassword = async (req, res) => {
   try {
@@ -124,9 +125,9 @@ const verifyChangePassword = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
     //console.log(decoded);
-    
+
     //console.log(realUserId);
-    
+
     const user = await userModel.findByIdAndUpdate(realUserId, { password: hashedPassword });
 
     if (!user) {
@@ -155,7 +156,7 @@ const loginUser = async (req, res) => {
       const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
       return res.json({ success: true, token });
     } else {
-      return res.json({ success: false, message: "Invalid credentials" });
+      return res.json({ success: false, message: "Mật khẩu không chính xác" });
     }
   } catch (error) {
     return res.json({ success: false, message: error.message });
@@ -181,7 +182,7 @@ const updateProfile = async (req, res) => {
   try {
     const { userId, name, phone, address, dob, gender } = req.body;
     const imageFile = req.file;
-    
+
     const updateData = {};
     if (name) updateData.name = name;
     if (phone !== undefined) updateData.phone = phone;
@@ -207,6 +208,42 @@ const updateProfile = async (req, res) => {
   }
 };
 
-export { registerUser, loginUser, getProfile, updateProfile,verify,
-    forgotPassword,verifyChangePassword,
-    deleteUser };
+const changePassword = async (req, res) => {
+  try {
+    const { userId, oldPassword, newPassword } = req.body;
+
+    if (!oldPassword || !newPassword) {
+      return res.json({ success: false, message: "Vui lòng nhập đầy đủ mật khẩu cũ và mới" });
+    }
+
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.json({ success: false, message: "Không tìm thấy người dùng" });
+    }
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) {
+      return res.json({ success: false, message: "Mật khẩu cũ không chính xác" });
+    }
+
+    if (newPassword.length < 8) {
+      return res.json({ success: false, message: "Mật khẩu mới phải có ít nhất 8 ký tự" });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    await userModel.findByIdAndUpdate(userId, { password: hashedPassword });
+
+    res.json({ success: true, message: "Đổi mật khẩu thành công" });
+  } catch (error) {
+    console.error(error);
+    res.json({ success: false, message: "Lỗi server!" });
+  }
+};
+
+export {
+  registerUser, loginUser, getProfile, updateProfile, verify,
+  forgotPassword, verifyChangePassword, changePassword,
+  deleteUser
+};
