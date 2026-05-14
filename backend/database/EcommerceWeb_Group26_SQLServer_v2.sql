@@ -255,6 +255,7 @@ CREATE TABLE dbo.Comment
     CommentID               INT IDENTITY(1,1) PRIMARY KEY,
     UserID                  INT NOT NULL,
     ProductID               INT NOT NULL,
+    OrderID                 INT NULL, -- Added OrderID
     Rating                  INT NULL,
     CommentText             NVARCHAR(MAX) NOT NULL,
     CreatedAt               DATETIME2 NOT NULL DEFAULT SYSDATETIME(),
@@ -262,6 +263,7 @@ CREATE TABLE dbo.Comment
 
     CONSTRAINT FK_Comment_User FOREIGN KEY (UserID) REFERENCES dbo.[User](UserID) ON DELETE CASCADE,
     CONSTRAINT FK_Comment_Product FOREIGN KEY (ProductID) REFERENCES dbo.Product(ProductID) ON DELETE CASCADE,
+    CONSTRAINT FK_Comment_Order FOREIGN KEY (OrderID) REFERENCES dbo.[Order](OrderID),
     CONSTRAINT CK_Comment_Rating CHECK (Rating BETWEEN 1 AND 5)
 );
 GO
