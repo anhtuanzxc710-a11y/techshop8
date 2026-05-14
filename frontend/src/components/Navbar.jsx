@@ -16,7 +16,7 @@ const Navbar = () => {
     token, setToken, backendurl, userData,
     search, setSearch,
     getNotifications, notifications, markOneAsRead, markAllAsRead,
-    cartCount
+    cartCount, setCartCount, guestCart, addToCart, updateCartItem, removeFromCart
   } = useContext(AppContext);
 
   const [showNotification, setShowNotification] = useState(false);
@@ -31,42 +31,41 @@ const Navbar = () => {
   const [drawerTotal, setDrawerTotal] = useState(0);
 
   useEffect(() => {
-    if (showCartDrawer && token) {
-      const fetchDrawerCart = async () => {
-        setDrawerLoading(true);
-        try {
-          const { data } = await axios.post(`${backendurl}/api/shopping-cart/get`, {}, { headers: { token } });
-          if (data.success) {
-            setDrawerCartItems(data.items);
-            setDrawerTotal(data.totalPrice);
-          }
-        } catch (error) {}
-        setDrawerLoading(false);
-      };
-      fetchDrawerCart();
+    if (showCartDrawer) {
+      if (token) {
+        const fetchDrawerCart = async () => {
+          setDrawerLoading(true);
+          try {
+            const { data } = await axios.post(`${backendurl}/api/shopping-cart/get`, {}, { headers: { token } });
+            if (data.success) {
+              setDrawerCartItems(data.items);
+              setDrawerTotal(data.totalPrice);
+            }
+          } catch (error) {}
+          setDrawerLoading(false);
+        };
+        fetchDrawerCart();
+      } else {
+        setDrawerCartItems(guestCart);
+        setDrawerTotal(guestCart.reduce((acc, item) => acc + (item.product.price * item.quantity), 0));
+      }
     }
-  }, [showCartDrawer, token, backendurl]);
+  }, [showCartDrawer, token, backendurl, guestCart]);
 
   const updateDrawerQuantity = async (productId, newQty) => {
-    try {
-      const { data } = await axios.post(`${backendurl}/api/shopping-cart/update`, { productId, quantity: newQty }, { headers: { token } });
-      if (data.success) {
-        setDrawerCartItems(data.items);
-        setDrawerTotal(data.totalPrice);
-        if (setCartCount) setCartCount(data.totalItems);
-      }
-    } catch (error) {}
+    const data = await updateCartItem(productId, newQty);
+    if (data && data.success) {
+      setDrawerCartItems(data.items);
+      setDrawerTotal(data.totalPrice);
+    }
   };
 
   const removeDrawerItem = async (productId) => {
-    try {
-      const { data } = await axios.post(`${backendurl}/api/shopping-cart/remove`, { productId }, { headers: { token } });
-      if (data.success) {
-        setDrawerCartItems(data.items);
-        setDrawerTotal(data.totalPrice);
-        if (setCartCount) setCartCount(data.totalItems);
-      }
-    } catch (error) {}
+    const data = await removeFromCart(productId);
+    if (data && data.success) {
+      setDrawerCartItems(data.items);
+      setDrawerTotal(data.totalPrice);
+    }
   };
 
   const normalizeLocale = (lng) => {
@@ -170,22 +169,22 @@ const Navbar = () => {
 
           {/* Right Actions */}
           <div className="flex items-center gap-1 md:gap-3">
+            {/* Shopping Cart */}
+            <div
+              onClick={() => setShowCartDrawer(true)}
+              className="relative cursor-pointer p-2.5 rounded-lg hover:bg-white/10 transition-all text-white flex items-center gap-2"
+            >
+              <FaShoppingCart size={20} />
+              <span className="hidden lg:block text-xs font-semibold">Giỏ hàng</span>
+              {cartCount > 0 && (
+                <span className="absolute -top-0.5 left-6 lg:left-auto lg:-top-0.5 lg:-right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full">
+                  {cartCount > 99 ? '99+' : cartCount}
+                </span>
+              )}
+            </div>
+
             {token && (
               <>
-                {/* Shopping Cart */}
-                <div
-                  onClick={() => setShowCartDrawer(true)}
-                  className="relative cursor-pointer p-2.5 rounded-lg hover:bg-white/10 transition-all text-white flex items-center gap-2"
-                >
-                  <FaShoppingCart size={20} />
-                  <span className="hidden lg:block text-xs font-semibold">Giỏ hàng</span>
-                  {cartCount > 0 && (
-                    <span className="absolute -top-0.5 left-6 lg:left-auto lg:-top-0.5 lg:-right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full">
-                      {cartCount > 99 ? '99+' : cartCount}
-                    </span>
-                  )}
-                </div>
-
                 {/* Notifications */}
                 <div className="relative">
                   <div 

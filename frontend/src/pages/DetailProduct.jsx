@@ -8,7 +8,7 @@ import { ShoppingCart, Star, MessageSquare, ShieldCheck, Truck, RotateCcw, Edit3
 import Skeleton from '../components/Skeleton';
 
 const DetailProduct = () => {
-  const { products, backendurl, userData, token, replies, setCartCount } = useContext(AppContext);
+  const { products, backendurl, userData, token, replies, setCartCount, addToCart } = useContext(AppContext);
   const navigate = useNavigate();
   const { prID } = useParams();
 
@@ -82,39 +82,22 @@ const DetailProduct = () => {
   }, [prID, userData, backendurl]);
 
   const handleAddToCart = () => {
-    if (!token) {
-      toast.error("Vui lòng đăng nhập để mua hàng!");
-      navigate('/login');
-    } else if (quantity > pr.stock_quantity) {
+    if (quantity > pr.stock_quantity) {
       toast.error(`Số lượng vượt quá tồn kho (${pr.stock_quantity})!`);
     } else {
-      const cartData = { prID, quantity };
-      localStorage.setItem('cartData', JSON.stringify(cartData));
-      navigate('/checkout', { state: cartData });
+      // For guest "Buy Now", we can still allow them to go to checkout, but they'll need to login there.
+      // Or we can just add to cart and navigate to cart.
+      addToCart(prID, quantity, pr);
+      navigate('/shopping-cart');
     }
   };
 
   const handleAddToShoppingCart = async () => {
-    if (!token) {
-      toast.error("Vui lòng đăng nhập!");
-      navigate('/login');
-      return;
-    }
     if (quantity > pr.stock_quantity) {
       toast.error(`Số lượng vượt quá tồn kho (${pr.stock_quantity})!`);
       return;
     }
-    try {
-      const { data } = await axios.post(`${backendurl}/api/shopping-cart/add`, { productId: prID, quantity }, { headers: { token } });
-      if (data.success) {
-        toast.success("Đã thêm vào giỏ hàng!");
-        if (setCartCount) setCartCount(data.totalItems);
-      } else {
-        toast.error(data.message);
-      }
-    } catch (error) {
-      toast.error("Không thể thêm vào giỏ hàng");
-    }
+    await addToCart(prID, quantity, pr);
   };
 
   const handleCommentSubmit = async () => {

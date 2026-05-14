@@ -16,13 +16,94 @@ const AppContextProvider=(props)=>{
     const [notifications,setNotifications]=useState(null)
     const [messages, setMessages] = useState([]);
     const [cartCount, setCartCount] = useState(0);
+    const [guestCart, setGuestCart] = useState(JSON.parse(localStorage.getItem('guestCart')) || []);
+
     const fetchCartCount = async () => {
         try {
             const tkn = localStorage.getItem('token');
-            if (!tkn) return;
+            if (!tkn) {
+                const count = guestCart.reduce((acc, item) => acc + item.quantity, 0);
+                setCartCount(count);
+                return;
+            };
             const {data} = await axios.post(backendurl+'/api/shopping-cart/count',{},{headers:{token: tkn}});
             if (data.success) setCartCount(data.totalItems);
         } catch (e) { console.log(e); }
+    };
+
+    const addToCart = async (productId, quantity, productData) => {
+        if (token) {
+            try {
+                const { data } = await axios.post(backendurl + '/api/shopping-cart/add', { productId, quantity }, { headers: { token } });
+                if (data.success) {
+                    toast.success("Đã thêm vào giỏ hàng!");
+                    setCartCount(data.totalItems);
+                }
+            } catch (error) {
+                toast.error("Không thể thêm vào giỏ hàng");
+            }
+        } else {
+            // Guest Cart Logic
+            let updatedCart = [...guestCart];
+            const existingItem = updatedCart.find(item => item.productId === productId);
+            if (existingItem) {
+                existingItem.quantity += quantity;
+            } else {
+                updatedCart.push({
+                    productId,
+                    quantity,
+                    product: productData // Store minimal product info for offline display
+                });
+            }
+            setGuestCart(updatedCart);
+            localStorage.setItem('guestCart', JSON.stringify(updatedCart));
+            toast.success("Đã thêm vào giỏ hàng (Khách)!");
+            setCartCount(updatedCart.reduce((acc, item) => acc + item.quantity, 0));
+        }
+    };
+
+    const updateCartItem = async (productId, quantity) => {
+        if (token) {
+            try {
+                const { data } = await axios.post(backendurl + '/api/shopping-cart/update', { productId, quantity }, { headers: { token } });
+                if (data.success) {
+                    setCartCount(data.totalItems);
+                    return data;
+                }
+            } catch (error) {
+                toast.error("Không thể cập nhật giỏ hàng");
+            }
+        } else {
+            let updatedCart = guestCart.map(item => 
+                item.productId === productId ? { ...item, quantity } : item
+            );
+            setGuestCart(updatedCart);
+            localStorage.setItem('guestCart', JSON.stringify(updatedCart));
+            setCartCount(updatedCart.reduce((acc, item) => acc + item.quantity, 0));
+            return { success: true, items: updatedCart, totalItems: updatedCart.reduce((acc, item) => acc + item.quantity, 0), totalPrice: updatedCart.reduce((acc, item) => acc + (item.product.price * item.quantity), 0) };
+        }
+    };
+
+    const removeFromCart = async (productId) => {
+        if (token) {
+            try {
+                const { data } = await axios.post(backendurl + '/api/shopping-cart/remove', { productId }, { headers: { token } });
+                if (data.success) {
+                    setCartCount(data.totalItems);
+                    toast.success("Đã xóa khỏi giỏ hàng");
+                    return data;
+                }
+            } catch (error) {
+                toast.error("Không thể xóa sản phẩm");
+            }
+        } else {
+            let updatedCart = guestCart.filter(item => item.productId !== productId);
+            setGuestCart(updatedCart);
+            localStorage.setItem('guestCart', JSON.stringify(updatedCart));
+            setCartCount(updatedCart.reduce((acc, item) => acc + item.quantity, 0));
+            toast.success("Đã xóa khỏi giỏ hàng (Khách)");
+            return { success: true, items: updatedCart, totalItems: updatedCart.reduce((acc, item) => acc + item.quantity, 0), totalPrice: updatedCart.reduce((acc, item) => acc + (item.product.price * item.quantity), 0) };
+        }
     };
     const addMessages = async(newMsgs) => {
         try {
@@ -185,7 +266,8 @@ const AppContextProvider=(props)=>{
         markAllAsRead,markOneAsRead,
         clearMessages,addMessages,setMessages,messages,getMessages,
         sendChangePassword,deleteUser,
-        cartCount, setCartCount, fetchCartCount
+        cartCount, setCartCount, fetchCartCount,
+        guestCart, setGuestCart, addToCart, updateCartItem, removeFromCart
     }
     
     useEffect(() => {
@@ -210,7 +292,8 @@ const AppContextProvider=(props)=>{
             await fetchCartCount();
           } else {
             setUserData(false);
-            setCartCount(0);
+            const count = guestCart.reduce((acc, item) => acc + item.quantity, 0);
+            setCartCount(count);
           }
         };
       

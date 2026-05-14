@@ -7,13 +7,19 @@ import { Trash2, Plus, Minus, ShoppingBag, ArrowRight, Tag, PackageOpen, ShieldC
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ShoppingCart = () => {
-  const { backendurl, token, userData, setCartCount } = useContext(AppContext);
+  const { backendurl, token, userData, setCartCount, guestCart, addToCart, updateCartItem, removeFromCart } = useContext(AppContext);
   const [cartItems, setCartItems] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   const fetchCart = async () => {
+    if (!token) {
+        setCartItems(guestCart);
+        setTotalPrice(guestCart.reduce((acc, item) => acc + (item.product.price * item.quantity), 0));
+        setLoading(false);
+        return;
+    }
     try {
       const { data } = await axios.post(`${backendurl}/api/shopping-cart/get`, {}, { headers: { token } });
       if (data.success) {
@@ -28,29 +34,18 @@ const ShoppingCart = () => {
   };
 
   const updateQuantity = async (productId, newQty) => {
-    try {
-      const { data } = await axios.post(`${backendurl}/api/shopping-cart/update`, { productId, quantity: newQty }, { headers: { token } });
-      if (data.success) {
-        setCartItems(data.items);
-        setTotalPrice(data.totalPrice);
-        if (setCartCount) setCartCount(data.totalItems);
-      }
-    } catch (error) {
-      toast.error("Không thể cập nhật số lượng");
+    const data = await updateCartItem(productId, newQty);
+    if (data && data.success) {
+      setCartItems(data.items);
+      setTotalPrice(data.totalPrice);
     }
   };
 
   const removeItem = async (productId) => {
-    try {
-      const { data } = await axios.post(`${backendurl}/api/shopping-cart/remove`, { productId }, { headers: { token } });
-      if (data.success) {
-        setCartItems(data.items);
-        setTotalPrice(data.totalPrice);
-        toast.success("Đã xóa khỏi giỏ hàng");
-        if (setCartCount) setCartCount(data.totalItems);
-      }
-    } catch (error) {
-      toast.error("Không thể xóa sản phẩm");
+    const data = await removeFromCart(productId);
+    if (data && data.success) {
+      setCartItems(data.items);
+      setTotalPrice(data.totalPrice);
     }
   };
 
@@ -59,28 +54,17 @@ const ShoppingCart = () => {
       toast.warning("Giỏ hàng trống!");
       return;
     }
+    if (!token) {
+        toast.info("Vui lòng đăng nhập để thanh toán!");
+        navigate('/login', { state: { from: '/shopping-cart' } });
+        return;
+    }
     navigate('/checkout', { state: { items: cartItems, totalPrice: totalPrice } });
   };
 
   useEffect(() => {
-    if (token) fetchCart();
-    else setLoading(false);
-  }, [token]);
-
-  if (!token) {
-    return (
-      <div className="container-main py-32 text-center">
-        <div className="w-24 h-24 bg-neutral-50 rounded-[40px] flex items-center justify-center mx-auto mb-8 shadow-sm">
-          <PackageOpen className="w-12 h-12 text-neutral-300" />
-        </div>
-        <h2 className="text-3xl font-black text-neutral-900 mb-4">Bạn chưa đăng nhập</h2>
-        <p className="text-neutral-500 mb-10 max-w-sm mx-auto">Đăng nhập ngay để xem giỏ hàng và tiếp tục hành trình mua sắm của bạn.</p>
-        <button onClick={() => navigate('/login')} className="btn-primary rounded-[24px] px-12 py-5 font-black text-lg shadow-glow active:scale-95 transition-all">
-          Đăng nhập ngay
-        </button>
-      </div>
-    );
-  }
+    fetchCart();
+  }, [token, guestCart]);
 
   if (loading) {
     return (
