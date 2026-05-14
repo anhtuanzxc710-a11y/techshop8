@@ -104,20 +104,47 @@ const productModel = {
         await transaction.begin();
 
         try {
+            let brandId = null;
+            if (data.brand) {
+                const bReq = new sql.Request(transaction).input('BrandName', sql.NVarChar, data.brand);
+                const bRes = await bReq.query('SELECT BrandID FROM Brand WHERE BrandName = @BrandName');
+                if (bRes.recordset.length > 0) {
+                    brandId = bRes.recordset[0].BrandID;
+                } else {
+                    const insBReq = new sql.Request(transaction).input('BrandName', sql.NVarChar, data.brand);
+                    const insBRes = await insBReq.query('INSERT INTO Brand (BrandName) OUTPUT INSERTED.BrandID VALUES (@BrandName)');
+                    brandId = insBRes.recordset[0].BrandID;
+                }
+            }
+
+            let categoryId = null;
+            if (data.category) {
+                const cReq = new sql.Request(transaction).input('CatName', sql.NVarChar, data.category);
+                const cRes = await cReq.query('SELECT CategoryID FROM Category WHERE CategoryName = @CatName');
+                if (cRes.recordset.length > 0) {
+                    categoryId = cRes.recordset[0].CategoryID;
+                } else {
+                    const insCReq = new sql.Request(transaction).input('CatName', sql.NVarChar, data.category);
+                    const insCRes = await insCReq.query('INSERT INTO Category (CategoryName) OUTPUT INSERTED.CategoryID VALUES (@CatName)');
+                    categoryId = insCRes.recordset[0].CategoryID;
+                }
+            }
+
             const request = new sql.Request(transaction);
             const result = await request
                 .input('ProductName', sql.NVarChar, data.name)
-                .input('Brand', sql.NVarChar, data.brand)
-                .input('Category', sql.NVarChar, data.category)
+                .input('Description', sql.NVarChar, data.description || '')
+                .input('BrandID', sql.Int, brandId)
+                .input('CategoryID', sql.Int, categoryId)
                 .input('Price', sql.Decimal(18, 2), data.price || 500)
                 .input('StockQuantity', sql.Int, data.stock_quantity)
                 .input('IsAvailable', sql.Bit, data.available ? 1 : 0)
                 .input('IsBestSeller', sql.Bit, data.bestseller ? 1 : 0)
                 .input('ImageURL', sql.NVarChar, data.image_url)
                 .query(`
-                    INSERT INTO Product (ProductName, Brand, Category, Price, StockQuantity, IsAvailable, IsBestSeller, ImageURL)
+                    INSERT INTO Product (ProductName, Description, BrandID, CategoryID, Price, StockQuantity, IsAvailable, IsBestSeller, ImageURL, ReleaseDate)
                     OUTPUT INSERTED.ProductID
-                    VALUES (@ProductName, @Brand, @Category, @Price, @StockQuantity, @IsAvailable, @IsBestSeller, @ImageURL)
+                    VALUES (@ProductName, @Description, @BrandID, @CategoryID, @Price, @StockQuantity, @IsAvailable, @IsBestSeller, @ImageURL, GETDATE())
                 `);
 
             const productId = result.recordset[0].ProductID;
@@ -162,8 +189,38 @@ const productModel = {
             let updates = [];
 
             if (data.name !== undefined) { updates.push('ProductName = @ProductName'); request.input('ProductName', sql.NVarChar, data.name); }
-            if (data.brand !== undefined) { updates.push('Brand = @Brand'); request.input('Brand', sql.NVarChar, data.brand); }
-            if (data.category !== undefined) { updates.push('Category = @Category'); request.input('Category', sql.NVarChar, data.category); }
+            if (data.description !== undefined) { updates.push('Description = @Description'); request.input('Description', sql.NVarChar, data.description); }
+            
+            if (data.brand !== undefined) { 
+                let brandId = null;
+                const bReq = new sql.Request(transaction).input('BrandName', sql.NVarChar, data.brand);
+                const bRes = await bReq.query('SELECT BrandID FROM Brand WHERE BrandName = @BrandName');
+                if (bRes.recordset.length > 0) {
+                    brandId = bRes.recordset[0].BrandID;
+                } else {
+                    const insBReq = new sql.Request(transaction).input('BrandName', sql.NVarChar, data.brand);
+                    const insBRes = await insBReq.query('INSERT INTO Brand (BrandName) OUTPUT INSERTED.BrandID VALUES (@BrandName)');
+                    brandId = insBRes.recordset[0].BrandID;
+                }
+                updates.push('BrandID = @BrandID'); 
+                request.input('BrandID', sql.Int, brandId); 
+            }
+            
+            if (data.category !== undefined) { 
+                let categoryId = null;
+                const cReq = new sql.Request(transaction).input('CatName', sql.NVarChar, data.category);
+                const cRes = await cReq.query('SELECT CategoryID FROM Category WHERE CategoryName = @CatName');
+                if (cRes.recordset.length > 0) {
+                    categoryId = cRes.recordset[0].CategoryID;
+                } else {
+                    const insCReq = new sql.Request(transaction).input('CatName', sql.NVarChar, data.category);
+                    const insCRes = await insCReq.query('INSERT INTO Category (CategoryName) OUTPUT INSERTED.CategoryID VALUES (@CatName)');
+                    categoryId = insCRes.recordset[0].CategoryID;
+                }
+                updates.push('CategoryID = @CategoryID'); 
+                request.input('CategoryID', sql.Int, categoryId); 
+            }
+
             if (data.price !== undefined) { updates.push('Price = @Price'); request.input('Price', sql.Decimal, data.price); }
             if (data.stock_quantity !== undefined) { updates.push('StockQuantity = @StockQuantity'); request.input('StockQuantity', sql.Int, data.stock_quantity); }
             if (data.available !== undefined) { updates.push('IsAvailable = @IsAvailable'); request.input('IsAvailable', sql.Bit, data.available ? 1 : 0); }
