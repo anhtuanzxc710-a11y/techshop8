@@ -6,7 +6,8 @@ import { AppContext } from '../context/AppContext';
 import { FaBell, FaShoppingCart, FaGlobe } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, User, LogOut, Package, MessageSquare, Phone, Mail, MapPin, ChevronDown } from 'lucide-react';
+import { Menu, X, User, LogOut, Package, MessageSquare, Phone, Mail, MapPin, ChevronDown, ShoppingBag, ArrowRight, Plus, Minus, Trash2 } from 'lucide-react';
+import axios from 'axios';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -23,6 +24,50 @@ const Navbar = () => {
   const [selectedNotification, setSelectedNotification] = useState(null);
   const [showMenu, setShowMenu] = useState(false);
   const [countNewNoti, setCountNewNoti] = useState(0);
+
+  const [showCartDrawer, setShowCartDrawer] = useState(false);
+  const [drawerCartItems, setDrawerCartItems] = useState([]);
+  const [drawerLoading, setDrawerLoading] = useState(false);
+  const [drawerTotal, setDrawerTotal] = useState(0);
+
+  useEffect(() => {
+    if (showCartDrawer && token) {
+      const fetchDrawerCart = async () => {
+        setDrawerLoading(true);
+        try {
+          const { data } = await axios.post(`${backendurl}/api/shopping-cart/get`, {}, { headers: { token } });
+          if (data.success) {
+            setDrawerCartItems(data.items);
+            setDrawerTotal(data.totalPrice);
+          }
+        } catch (error) {}
+        setDrawerLoading(false);
+      };
+      fetchDrawerCart();
+    }
+  }, [showCartDrawer, token, backendurl]);
+
+  const updateDrawerQuantity = async (productId, newQty) => {
+    try {
+      const { data } = await axios.post(`${backendurl}/api/shopping-cart/update`, { productId, quantity: newQty }, { headers: { token } });
+      if (data.success) {
+        setDrawerCartItems(data.items);
+        setDrawerTotal(data.totalPrice);
+        if (setCartCount) setCartCount(data.totalItems);
+      }
+    } catch (error) {}
+  };
+
+  const removeDrawerItem = async (productId) => {
+    try {
+      const { data } = await axios.post(`${backendurl}/api/shopping-cart/remove`, { productId }, { headers: { token } });
+      if (data.success) {
+        setDrawerCartItems(data.items);
+        setDrawerTotal(data.totalPrice);
+        if (setCartCount) setCartCount(data.totalItems);
+      }
+    } catch (error) {}
+  };
 
   const normalizeLocale = (lng) => {
     if (!lng) return 'vi-VN';
@@ -129,7 +174,7 @@ const Navbar = () => {
               <>
                 {/* Shopping Cart */}
                 <div
-                  onClick={() => navigate('/shopping-cart')}
+                  onClick={() => setShowCartDrawer(true)}
                   className="relative cursor-pointer p-2.5 rounded-lg hover:bg-white/10 transition-all text-white flex items-center gap-2"
                 >
                   <FaShoppingCart size={20} />
@@ -243,9 +288,40 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* Desktop Nav Links Bar */}
         <div className="bg-primary hidden lg:block">
           <div className="container-main flex items-center">
+            {/* Mega Menu Trigger */}
+            <div className="group relative px-4 py-1.5 cursor-pointer">
+              <span className="text-[13px] font-semibold text-white/80 group-hover:text-white flex items-center gap-1 transition-all">
+                Danh mục <ChevronDown size={14} />
+              </span>
+              <div className="absolute top-full left-0 w-[600px] bg-white rounded-xl shadow-2xl border border-neutral-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-[60] p-6 grid grid-cols-3 gap-6">
+                <div>
+                  <h4 className="text-sm font-bold text-neutral-900 mb-3 border-b pb-2">Thiết bị thông minh</h4>
+                  <ul className="space-y-2">
+                    <li><button onClick={() => { localStorage.setItem('category', JSON.stringify(['Điện thoại di động'])); navigate('/products'); window.scrollTo(0,0); }} className="text-sm font-medium text-neutral-600 hover:text-primary transition-colors">Điện thoại di động</button></li>
+                    <li><button onClick={() => { localStorage.setItem('category', JSON.stringify(['Tablet'])); navigate('/products'); window.scrollTo(0,0); }} className="text-sm font-medium text-neutral-600 hover:text-primary transition-colors">Máy tính bảng</button></li>
+                    <li><button onClick={() => { localStorage.setItem('category', JSON.stringify(['Smartwatch'])); navigate('/products'); window.scrollTo(0,0); }} className="text-sm font-medium text-neutral-600 hover:text-primary transition-colors">Đồng hồ thông minh</button></li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-neutral-900 mb-3 border-b pb-2">Máy tính & Màn hình</h4>
+                  <ul className="space-y-2">
+                    <li><button onClick={() => { localStorage.setItem('category', JSON.stringify(['Laptop'])); navigate('/products'); window.scrollTo(0,0); }} className="text-sm font-medium text-neutral-600 hover:text-primary transition-colors">Laptop</button></li>
+                    <li><button onClick={() => { localStorage.setItem('category', JSON.stringify(['Monitors'])); navigate('/products'); window.scrollTo(0,0); }} className="text-sm font-medium text-neutral-600 hover:text-primary transition-colors">Màn hình</button></li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-neutral-900 mb-3 border-b pb-2">Phụ kiện & Âm thanh</h4>
+                  <ul className="space-y-2">
+                    <li><button onClick={() => { localStorage.setItem('category', JSON.stringify(['Tai nghe'])); navigate('/products'); window.scrollTo(0,0); }} className="text-sm font-medium text-neutral-600 hover:text-primary transition-colors">Tai nghe</button></li>
+                    <li><button onClick={() => { localStorage.setItem('category', JSON.stringify(['Loa'])); navigate('/products'); window.scrollTo(0,0); }} className="text-sm font-medium text-neutral-600 hover:text-primary transition-colors">Loa</button></li>
+                    <li><button onClick={() => { localStorage.setItem('category', JSON.stringify(['Keyboards'])); navigate('/products'); window.scrollTo(0,0); }} className="text-sm font-medium text-neutral-600 hover:text-primary transition-colors">Bàn phím & Chuột</button></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
             {navLinks.map((link) => (
               <NavLink 
                 key={link.path}
@@ -344,6 +420,97 @@ const Navbar = () => {
               </div>
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      {/* Slide-out Cart Drawer */}
+      <AnimatePresence>
+        {showCartDrawer && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setShowCartDrawer(false)}
+              className="fixed inset-0 bg-black/50 z-[100] backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
+              transition={{ type: 'tween', duration: 0.3 }}
+              className="fixed top-0 right-0 bottom-0 w-full md:w-[400px] bg-white z-[110] shadow-2xl flex flex-col"
+            >
+              <div className="p-5 flex items-center justify-between border-b border-neutral-100 bg-neutral-50">
+                <h2 className="text-lg font-bold text-neutral-900 flex items-center gap-2"><ShoppingBag size={20} className="text-primary" /> Giỏ hàng ({cartCount})</h2>
+                <button onClick={() => setShowCartDrawer(false)} className="p-2 bg-white border border-neutral-200 hover:bg-neutral-100 rounded-full transition-colors"><X size={18} /></button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-5">
+                {drawerLoading ? (
+                  <div className="flex justify-center items-center h-full">
+                    <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+                  </div>
+                ) : drawerCartItems.length === 0 ? (
+                  <div className="text-center py-20">
+                    <ShoppingBag size={48} className="mx-auto text-neutral-200 mb-4" />
+                    <p className="text-neutral-500 text-sm">Giỏ hàng của bạn đang trống</p>
+                    <button onClick={() => {setShowCartDrawer(false); navigate('/products');}} className="mt-4 px-6 py-2.5 bg-primary/10 text-primary font-bold rounded-lg hover:bg-primary hover:text-white transition-colors">Mua sắm ngay</button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-4">
+                    {drawerCartItems.map(item => (
+                      <div key={item._id} className="flex gap-4 border border-neutral-100 p-3 rounded-xl hover:border-primary/20 hover:shadow-md transition-all relative">
+                        <img src={item.product.image_url} alt="" className="w-20 h-20 object-contain bg-neutral-50 rounded-lg p-2" />
+                        <div className="flex-1 flex flex-col justify-center">
+                          <p className="text-sm font-semibold text-neutral-900 line-clamp-2 leading-tight mb-2 pr-6">{item.product.name}</p>
+                          <div className="flex items-center justify-between mt-auto">
+                            {/* Quantity Controls */}
+                            <div className="flex items-center bg-neutral-100 rounded-lg p-0.5 shadow-inner">
+                              <button
+                                onClick={() => updateDrawerQuantity(item.productId, item.quantity - 1)}
+                                disabled={item.quantity <= 1}
+                                className="w-6 h-6 flex items-center justify-center bg-transparent hover:bg-white rounded transition-all disabled:opacity-20 text-neutral-600"
+                              >
+                                <Minus size={12} strokeWidth={3} />
+                              </button>
+                              <span className="w-6 text-center font-bold text-xs text-neutral-800">{item.quantity}</span>
+                              <button
+                                onClick={() => updateDrawerQuantity(item.productId, item.quantity + 1)}
+                                disabled={item.quantity >= item.product.stock_quantity}
+                                className="w-6 h-6 flex items-center justify-center bg-transparent hover:bg-white rounded transition-all disabled:opacity-20 text-neutral-600"
+                              >
+                                <Plus size={12} strokeWidth={3} />
+                              </button>
+                            </div>
+                            <p className="text-sm font-bold text-primary">{new Intl.NumberFormat('vi-VN').format(item.product.price)}₫</p>
+                          </div>
+                        </div>
+                        {/* Remove button */}
+                        <button 
+                          onClick={() => removeDrawerItem(item.productId)}
+                          className="absolute top-3 right-3 text-neutral-300 hover:text-red-500 transition-colors p-1"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {drawerCartItems.length > 0 && (
+                <div className="p-6 border-t border-neutral-100 bg-white">
+                  <div className="flex justify-between items-center mb-5">
+                    <span className="text-sm font-bold text-neutral-500 uppercase tracking-wider">Tổng tạm tính</span>
+                    <span className="text-2xl font-black text-primary">{new Intl.NumberFormat('vi-VN').format(drawerTotal)}<span className="text-base">₫</span></span>
+                  </div>
+                  <button 
+                    onClick={() => { setShowCartDrawer(false); navigate('/shopping-cart'); }}
+                    className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3.5 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg shadow-primary/20 active:scale-95"
+                  >
+                    Xem giỏ hàng & Thanh toán <ArrowRight size={18} />
+                  </button>
+                </div>
+              )}
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </>

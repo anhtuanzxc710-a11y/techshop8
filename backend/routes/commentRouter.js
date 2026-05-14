@@ -5,6 +5,7 @@ import {
   getCommentsByUser,
   updateComment,
   checkEligibility,
+  deleteComment
 } from "../controllers/commentController.js";
 import authUser from "../middleware/authUser.js";
 
@@ -13,6 +14,7 @@ const commentRouter = express.Router();
 commentRouter.post("/create-comment", authUser, createComment);
 commentRouter.get("/get-comments-by-product/:prID", getCommentsByProduct);
 commentRouter.post("/update-comment", authUser, updateComment);
+commentRouter.post("/delete-comment", authUser, deleteComment);
 commentRouter.get("/get-comments", authUser, getCommentsByUser);
 commentRouter.post("/check-eligibility", authUser, checkEligibility);
 export default commentRouter;

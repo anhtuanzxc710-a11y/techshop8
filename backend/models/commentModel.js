@@ -7,6 +7,7 @@ const commentModel = {
             _id: row.CommentID,
             userId: row.UserID,
             productId: row.ProductID,
+            orderId: row.OrderID,
             rating: row.Rating,
             text: row.CommentText,
             createdAt: row.CreatedAt
@@ -24,6 +25,10 @@ const commentModel = {
         if (filter.productId) {
             query += ' AND ProductID = @ProductID';
             request.input('ProductID', sql.Int, filter.productId);
+        }
+        if (filter.orderId) {
+            query += ' AND OrderID = @OrderID';
+            request.input('OrderID', sql.Int, filter.orderId);
         }
 
         const result = await request.query(query);
@@ -43,7 +48,7 @@ const commentModel = {
         // Join with User and Product to provide embedded data
         let query = `
             SELECT 
-                c.CommentID, c.UserID, c.ProductID, c.Rating, c.CommentText, c.CreatedAt,
+                c.CommentID, c.UserID, c.ProductID, c.OrderID, c.Rating, c.CommentText, c.CreatedAt,
                 u.FullName as UserName, u.ProfileImage as UserImage,
                 p.ProductName, p.ImageURL as ProductImage
             FROM Comment c
@@ -61,6 +66,10 @@ const commentModel = {
             query += ' AND c.ProductID = @ProductID';
             request.input('ProductID', sql.Int, filter.productId);
         }
+        if (filter.orderId) {
+            query += ' AND c.OrderID = @OrderID';
+            request.input('OrderID', sql.Int, filter.orderId);
+        }
 
         query += ' ORDER BY c.CreatedAt DESC';
 
@@ -69,6 +78,7 @@ const commentModel = {
             _id: row.CommentID,
             userId: row.UserID,
             productId: row.ProductID,
+            orderId: row.OrderID,
             rating: row.Rating,
             text: row.CommentText,
             createdAt: row.CreatedAt,
@@ -90,12 +100,13 @@ const commentModel = {
         const request = pool.request()
             .input('UserID', sql.Int, data.userId)
             .input('ProductID', sql.Int, data.productId)
+            .input('OrderID', sql.Int, data.orderId || null)
             .input('Rating', sql.Int, data.rating || null)
             .input('CommentText', sql.NVarChar, data.text)
             .query(`
-                INSERT INTO Comment (UserID, ProductID, Rating, CommentText)
+                INSERT INTO Comment (UserID, ProductID, OrderID, Rating, CommentText)
                 OUTPUT INSERTED.CommentID
-                VALUES (@UserID, @ProductID, @Rating, @CommentText)
+                VALUES (@UserID, @ProductID, @OrderID, @Rating, @CommentText)
             `);
         
         const result = await request;
@@ -129,6 +140,26 @@ const commentModel = {
         await request.query(query);
         const savedComment = await this.find(filter);
         return savedComment[0];
+    },
+
+    async remove(filter) {
+        const pool = await connectDB();
+        const request = pool.request();
+        let query = 'DELETE FROM Comment WHERE 1=1';
+        if (filter.userId) {
+            query += ' AND UserID = @UserID';
+            request.input('UserID', sql.Int, filter.userId);
+        }
+        if (filter.productId) {
+            query += ' AND ProductID = @ProductID';
+            request.input('ProductID', sql.Int, filter.productId);
+        }
+        if (filter._id) {
+            query += ' AND CommentID = @CommentID';
+            request.input('CommentID', sql.Int, filter._id);
+        }
+        const result = await request.query(query);
+        return result.rowsAffected[0] > 0;
     }
 };
 

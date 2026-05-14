@@ -5,6 +5,8 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { assets } from '../assets/assets';
 import { useTranslation } from 'react-i18next';
+import { LayoutGrid, List, Filter, Edit, Trash2, Box, Tag, ChevronLeft, ChevronRight } from 'lucide-react';
+
 
 const ProductsList = () => {
   const { t } = useTranslation();
@@ -25,6 +27,12 @@ const ProductsList = () => {
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+
+  // View & Filter State
+  const [viewMode, setViewMode] = useState('table');
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('All');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   // Add Product State
   const [showAddModal, setShowAddModal] = useState(false);
@@ -89,18 +97,24 @@ const ProductsList = () => {
   }, [aToken, backendurl]);
 
   useEffect(() => {
-    if (!search) {
-      setFilterProducts(products);
-    } else {
-      const filtered = products.filter((product) =>
+    let filtered = products;
+    if (search) {
+      filtered = filtered.filter((product) =>
         product?.name.toLowerCase().includes(search.toLowerCase()) ||
         product?.category.toLowerCase().includes(search.toLowerCase()) ||
         product?.brand.toLowerCase().includes(search.toLowerCase()) ||
         product?.description.toLowerCase().includes(search.toLowerCase())
       );
-      setFilterProducts(filtered);
     }
-  }, [search, products, setFilterProducts]);
+    if (selectedCategoryFilter !== 'All') {
+      filtered = filtered.filter(p => p.category === selectedCategoryFilter);
+    }
+    setFilterProducts(filtered);
+    setCurrentPage(1);
+  }, [search, products, selectedCategoryFilter, setFilterProducts]);
+
+  const totalPages = Math.ceil(filterProducts.length / itemsPerPage) || 1;
+  const paginatedProducts = filterProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const handleDelete = async () => {
     if (selectedProduct) {
@@ -195,8 +209,8 @@ const ProductsList = () => {
         <button
           onClick={() => setShowAddModal(!showAddModal)}
           className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-bold shadow-md transition-all ${showAddModal
-              ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              : 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg'
+            ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            : 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg'
             }`}
         >
           {showAddModal ? t('products.close') : t('products.add')}
@@ -369,90 +383,238 @@ const ProductsList = () => {
         </div>
       )}
 
-      <div className="w-full flex flex-wrap gap-4 pt-5 gap-y-6">
-        {filterProducts.map((item, index) => (
-          <div className="bg-white border border-gray-100 rounded-2xl max-w-[210px] overflow-hidden group shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300" key={index}>
-            <div className="relative aspect-[4/5] overflow-hidden bg-gray-50">
-              <img
-                onClick={() => handleNavigate(item)}
-                className="w-full h-full object-cover cursor-pointer group-hover:scale-110 transition-transform duration-700"
-                src={item.image_url}
-                alt=""
-              />
-              <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button
-                  onClick={() => handleNavigate(item)}
-                  className="w-8 h-8 bg-white/90 backdrop-blur rounded-full flex items-center justify-center shadow-md hover:bg-primary hover:text-white transition-all"
-                >
-                  <span className="text-xs">✎</span>
-                </button>
-                <button
-                  onClick={() => {
-                    setSelectedProduct(item);
-                    setShowDeleteModal(true);
-                  }}
-                  className="w-8 h-8 bg-white/90 backdrop-blur rounded-full flex items-center justify-center shadow-md hover:bg-red-500 hover:text-white transition-all"
-                >
-                  <span className="text-xs">&times;</span>
-                </button>
-              </div>
-            </div>
-
-            <div className="p-4">
-              <p className="text-gray-800 font-bold text-sm line-clamp-1 mb-1">{item.name}</p>
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 bg-gray-50 px-2 py-0.5 rounded">{item.category}</span>
-                <span className="text-primary font-bold text-xs">{Number(item.price).toLocaleString()} ₫</span>
-              </div>
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-[10px] font-semibold text-neutral-500">Kho: <strong className={item.stock_quantity <= 5 ? 'text-red-500' : 'text-neutral-700'}>{item.stock_quantity}</strong></span>
-              </div>
-
-              <div className="space-y-2 pt-2 border-t border-gray-50">
-                <label className="flex items-center justify-between cursor-pointer group/toggle">
-                  <span className="text-[11px] font-medium text-gray-500 group-hover/toggle:text-gray-700 transition-colors">{t('products.available')}</span>
-                  <div className="relative">
-                    <input
-                      onChange={() => {
-                        changeAvailability(item._id);
-                        setProducts((prevProducts) =>
-                          prevProducts.map((p) =>
-                            p._id === item._id ? { ...p, available: !p.available } : p
-                          )
-                        );
-                      }}
-                      type="checkbox"
-                      className="sr-only peer"
-                      checked={item.available}
-                    />
-                    <div className="w-8 h-4 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600"></div>
-                  </div>
-                </label>
-
-                <label className="flex items-center justify-between cursor-pointer group/toggle">
-                  <span className="text-[11px] font-medium text-gray-500 group-hover/toggle:text-gray-700 transition-colors">{t('products.bestseller')}</span>
-                  <div className="relative">
-                    <input
-                      onChange={() => {
-                        changeBestsellerStatus(item._id);
-                        setProducts((prevProducts) =>
-                          prevProducts.map((p) =>
-                            p._id === item._id ? { ...p, bestseller: !p.bestseller } : p
-                          )
-                        );
-                      }}
-                      type="checkbox"
-                      className="sr-only peer"
-                      checked={item.bestseller}
-                    />
-                    <div className="w-8 h-4 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-amber-400"></div>
-                  </div>
-                </label>
-              </div>
-            </div>
-          </div>
-        ))}
+      {/* Toolbar: Filters & View Toggle */}
+      <div className="flex flex-col sm:flex-row justify-between items-center bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-6 mt-6">
+        <div className="flex items-center gap-3 w-full sm:w-auto mb-4 sm:mb-0">
+          <Filter className="w-5 h-5 text-gray-400" />
+          <select 
+            value={selectedCategoryFilter}
+            onChange={(e) => setSelectedCategoryFilter(e.target.value)}
+            className="border-none bg-gray-50 rounded-xl px-4 py-2 text-sm font-medium text-gray-700 outline-none focus:ring-2 focus:ring-indigo-100 cursor-pointer"
+          >
+            <option value="All">Tất cả danh mục</option>
+            {categories.map((item) => (
+              <option key={`filter-${item.CategoryID}`} value={item.CategoryName}>{item.CategoryName}</option>
+            ))}
+          </select>
+        </div>
+        <div className="flex items-center gap-2 bg-gray-50 p-1 rounded-xl">
+          <button 
+            onClick={() => setViewMode('table')}
+            className={`p-2 rounded-lg transition-all ${viewMode === 'table' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}
+          >
+            <List className="w-4 h-4" />
+          </button>
+          <button 
+            onClick={() => setViewMode('grid')}
+            className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}
+          >
+            <LayoutGrid className="w-4 h-4" />
+          </button>
+        </div>
       </div>
+
+      {viewMode === 'table' ? (
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm whitespace-nowrap">
+              <thead className="bg-gray-50 text-gray-600 font-semibold border-b border-gray-100">
+                <tr>
+                  <th className="px-6 py-4">Sản phẩm</th>
+                  <th className="px-6 py-4">Phân loại</th>
+                  <th className="px-6 py-4">Giá bán</th>
+                  <th className="px-6 py-4">Tồn kho</th>
+                  <th className="px-6 py-4 text-center">Trạng thái</th>
+                  <th className="px-6 py-4 text-right">Hành động</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {paginatedProducts.length > 0 ? paginatedProducts.map((item) => (
+                  <tr key={item._id} className="hover:bg-indigo-50/30 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <img src={item.image_url} alt="" className="w-10 h-10 rounded-lg object-cover border border-gray-100 shadow-sm" />
+                        <div>
+                          <p className="font-bold text-gray-800 line-clamp-1 max-w-[200px]">{item.name}</p>
+                          <p className="text-xs text-gray-500">{item.brand}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-gray-50 text-gray-600 border border-gray-200">
+                        <Tag className="w-3 h-3" /> {item.category}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 font-bold text-indigo-600">
+                      {Number(item.price).toLocaleString()} ₫
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`font-bold ${item.stock_quantity <= 5 ? 'text-red-500' : 'text-gray-700'}`}>
+                        {item.stock_quantity}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col gap-2 items-center">
+                        <label className="flex items-center gap-2 cursor-pointer group">
+                          <span className="text-[10px] font-bold text-gray-500 group-hover:text-gray-700 w-12 text-right">Hiển thị</span>
+                          <div className="relative">
+                            <input
+                              type="checkbox" className="sr-only peer" checked={item.available}
+                              onChange={() => {
+                                changeAvailability(item._id);
+                                setProducts(prev => prev.map(p => p._id === item._id ? { ...p, available: !p.available } : p));
+                              }}
+                            />
+                            <div className="w-7 h-4 bg-gray-200 rounded-full peer peer-checked:bg-blue-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:after:translate-x-3"></div>
+                          </div>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer group">
+                          <span className="text-[10px] font-bold text-gray-500 group-hover:text-gray-700 w-12 text-right">Best</span>
+                          <div className="relative">
+                            <input
+                              type="checkbox" className="sr-only peer" checked={item.bestseller}
+                              onChange={() => {
+                                changeBestsellerStatus(item._id);
+                                setProducts(prev => prev.map(p => p._id === item._id ? { ...p, bestseller: !p.bestseller } : p));
+                              }}
+                            />
+                            <div className="w-7 h-4 bg-gray-200 rounded-full peer peer-checked:bg-amber-400 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:after:translate-x-3"></div>
+                          </div>
+                        </label>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button onClick={() => handleNavigate(item)} className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-indigo-400 hover:bg-indigo-50 hover:text-indigo-600 transition-colors">
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => { setSelectedProduct(item); setShowDeleteModal(true); }} className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                )) : (
+                  <tr>
+                    <td colSpan="6" className="px-6 py-12 text-center text-gray-500">
+                      <Box className="w-12 h-12 mx-auto text-gray-300 mb-3" />
+                      <p className="font-medium">Không tìm thấy sản phẩm nào</p>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : (
+        <div className="w-full flex flex-wrap gap-4 gap-y-6 mb-6">
+          {paginatedProducts.map((item, index) => (
+            <div className="bg-white border border-gray-100 rounded-2xl max-w-[210px] overflow-hidden group shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300" key={index}>
+              <div className="relative aspect-[4/5] overflow-hidden bg-gray-50">
+                <img
+                  onClick={() => handleNavigate(item)}
+                  className="w-full h-full object-cover cursor-pointer group-hover:scale-110 transition-transform duration-700"
+                  src={item.image_url}
+                  alt=""
+                />
+                <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button
+                    onClick={() => handleNavigate(item)}
+                    className="w-8 h-8 bg-white/90 backdrop-blur rounded-full flex items-center justify-center shadow-md hover:bg-primary hover:text-white transition-all"
+                  >
+                    <Edit className="w-3 h-3" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSelectedProduct(item);
+                      setShowDeleteModal(true);
+                    }}
+                    className="w-8 h-8 bg-white/90 backdrop-blur rounded-full flex items-center justify-center shadow-md hover:bg-red-500 hover:text-white transition-all"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-4">
+                <p className="text-gray-800 font-bold text-sm line-clamp-1 mb-1">{item.name}</p>
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 bg-gray-50 px-2 py-0.5 rounded">{item.category}</span>
+                  <span className="text-primary font-bold text-xs">{Number(item.price).toLocaleString()} ₫</span>
+                </div>
+                <div className="flex justify-between items-center mb-4">
+                  <span className="text-[10px] font-semibold text-neutral-500">Kho: <strong className={item.stock_quantity <= 5 ? 'text-red-500' : 'text-neutral-700'}>{item.stock_quantity}</strong></span>
+                </div>
+
+                <div className="space-y-2 pt-2 border-t border-gray-50">
+                  <label className="flex items-center justify-between cursor-pointer group/toggle">
+                    <span className="text-[11px] font-medium text-gray-500 group-hover/toggle:text-gray-700 transition-colors">{t('products.available')}</span>
+                    <div className="relative">
+                      <input
+                        onChange={() => {
+                          changeAvailability(item._id);
+                          setProducts((prevProducts) =>
+                            prevProducts.map((p) =>
+                              p._id === item._id ? { ...p, available: !p.available } : p
+                            )
+                          );
+                        }}
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={item.available}
+                      />
+                      <div className="w-8 h-4 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600"></div>
+                    </div>
+                  </label>
+
+                  <label className="flex items-center justify-between cursor-pointer group/toggle">
+                    <span className="text-[11px] font-medium text-gray-500 group-hover/toggle:text-gray-700 transition-colors">{t('products.bestseller')}</span>
+                    <div className="relative">
+                      <input
+                        onChange={() => {
+                          changeBestsellerStatus(item._id);
+                          setProducts((prevProducts) =>
+                            prevProducts.map((p) =>
+                              p._id === item._id ? { ...p, bestseller: !p.bestseller } : p
+                            )
+                          );
+                        }}
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={item.bestseller}
+                      />
+                      <div className="w-8 h-4 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-amber-400"></div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 mt-4 pb-8">
+          <button 
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <span className="text-sm font-bold text-gray-800 bg-white border border-gray-200 px-4 h-10 flex items-center justify-center rounded-xl shadow-sm">
+            Trang {currentPage} / {totalPages}
+          </span>
+          <button 
+            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+            className="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
+        </div>
+      )}
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && selectedProduct && (

@@ -1,13 +1,34 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { AppContext } from '../context/AppContext';
-import { MessageSquare, Reply, ShoppingBag, Calendar } from 'lucide-react';
+import { MessageSquare, Reply, ShoppingBag, Calendar, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { toast } from 'react-toastify';
+import axios from 'axios';
 import { useTranslation } from 'react-i18next';
 
 const MyComments = () => {
   const { t } = useTranslation();
-  const { token, comments, replies, getComments, getRepliesByUser } = useContext(AppContext);
+  const { token, comments, replies, getComments, getRepliesByUser, backendurl, userData } = useContext(AppContext);
   const [loading, setLoading] = useState(true);
+
+  const handleDeleteComment = async (commentId) => {
+    if (!window.confirm("Bạn có chắc chắn muốn xóa đánh giá này?")) return;
+    try {
+      const { data } = await axios.post(`${backendurl}/api/comment/delete-comment`, {
+        commentId: commentId
+      }, { headers: { token } });
+      
+      if (data.success) {
+        toast.success("Đánh giá đã được xóa!");
+        await getComments();
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      toast.error("Có lỗi xảy ra khi xóa đánh giá!");
+    }
+  };
 
   useEffect(() => {
     (async () => {
@@ -69,6 +90,13 @@ const MyComments = () => {
                     <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-0.5">{t('comments.product_label')}</p>
                     <h3 className="text-sm font-bold text-neutral-900 truncate">{comment.productData.name}</h3>
                   </div>
+                  <button
+                    onClick={() => handleDeleteComment(comment._id)}
+                    title="Xóa đánh giá"
+                    className="p-2 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
+                  >
+                    <Trash2 size={16} />
+                  </button>
                 </div>
 
                 <div className="flex-1 bg-neutral-50 rounded-2xl p-4 mb-4 relative">

@@ -41,15 +41,24 @@ const DetailProduct = () => {
   }, [token, userData, prID, backendurl]);
 
   useEffect(() => {
-    if (prID && products.length > 0) {
-      const prInfo = products.find(p => String(p._id) === String(prID));
-      if (prInfo) {
-        setPr(prInfo);
-        setCategory(prInfo.category);
+    const fetchProductDetails = async () => {
+      try {
+        const { data } = await axios.get(`${backendurl}/api/product/detail-product/${prID}`);
+        if (data.success && data.data) {
+          setPr(data.data);
+          setCategory(data.data.category);
+        }
+      } catch (error) {
+        console.error("Error fetching product details", error);
+      } finally {
         setLoading(false);
       }
+    };
+
+    if (prID) {
+      fetchProductDetails();
     }
-  }, [prID, products]);
+  }, [prID, backendurl]);
 
   useEffect(() => {
     const fetchComments = async () => {
@@ -76,6 +85,8 @@ const DetailProduct = () => {
     if (!token) {
       toast.error("Vui lòng đăng nhập để mua hàng!");
       navigate('/login');
+    } else if (quantity > pr.stock_quantity) {
+      toast.error(`Số lượng vượt quá tồn kho (${pr.stock_quantity})!`);
     } else {
       const cartData = { prID, quantity };
       localStorage.setItem('cartData', JSON.stringify(cartData));
@@ -87,6 +98,10 @@ const DetailProduct = () => {
     if (!token) {
       toast.error("Vui lòng đăng nhập!");
       navigate('/login');
+      return;
+    }
+    if (quantity > pr.stock_quantity) {
+      toast.error(`Số lượng vượt quá tồn kho (${pr.stock_quantity})!`);
       return;
     }
     try {
@@ -124,6 +139,31 @@ const DetailProduct = () => {
     } catch (error) {
       console.error("Error submitting comment:", error);
       toast.error("Có lỗi xảy ra khi xử lý bình luận!");
+    }
+  };
+
+  const handleDeleteComment = async () => {
+    if (!window.confirm("Bạn có chắc chắn muốn xóa đánh giá này?")) return;
+    try {
+      const { data } = await axios.post(`${backendurl}/api/comment/delete-comment`, {
+        userId: userData._id,
+        productId: prID,
+      }, { headers: { token } });
+      
+      if (data.success) {
+        toast.success("Đánh giá đã được xóa!");
+        setUserComment(null);
+        setCommentText('');
+        setRating(5);
+        
+        const response = await axios.get(`${backendurl}/api/comment/get-comments-by-product/${prID}`);
+        setAllComments(response.data);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      toast.error("Có lỗi xảy ra khi xóa đánh giá!");
     }
   };
 
@@ -237,22 +277,40 @@ const DetailProduct = () => {
               {/* Quantity */}
               <div className="flex items-center gap-4 mb-4">
                 <span className="text-sm font-semibold text-neutral-700">Số lượng:</span>
-                <div className="flex items-center border border-neutral-200 rounded-md overflow-hidden">
+                <div className="flex items-center border border-neutral-200 rounded-md overflow-hidden bg-white">
                   <button
                     onClick={() => setQuantity(q => Math.max(1, q - 1))}
-                    className="w-8 h-8 flex items-center justify-center hover:bg-neutral-50 transition-colors font-semibold text-neutral-600"
+                    disabled={quantity <= 1}
+                    className="w-8 h-8 flex items-center justify-center hover:bg-neutral-50 transition-colors font-semibold text-neutral-600 disabled:opacity-30 disabled:cursor-not-allowed"
                   >-</button>
                   <input
                     type="number"
                     value={quantity}
-                    onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                    onChange={(e) => {
+                      let val = parseInt(e.target.value) || 1;
+                      if (val > pr.stock_quantity) {
+                         toast.warning(`Chỉ còn ${pr.stock_quantity} sản phẩm trong kho`);
+                         val = pr.stock_quantity;
+                      }
+                      setQuantity(Math.max(1, val));
+                    }}
                     className="w-12 h-8 text-center font-semibold text-neutral-900 bg-transparent border-x border-neutral-200 text-sm focus:outline-none"
                   />
                   <button
-                    onClick={() => setQuantity(q => q + 1)}
-                    className="w-8 h-8 flex items-center justify-center hover:bg-neutral-50 transition-colors font-semibold text-neutral-600"
+                    onClick={() => {
+                      if (quantity >= pr.stock_quantity) {
+                        toast.warning(`Chỉ còn ${pr.stock_quantity} sản phẩm trong kho`);
+                      } else {
+                        setQuantity(q => q + 1);
+                      }
+                    }}
+                    disabled={quantity >= pr.stock_quantity}
+                    className="w-8 h-8 flex items-center justify-center hover:bg-neutral-50 transition-colors font-semibold text-neutral-600 disabled:opacity-30 disabled:cursor-not-allowed"
                   >+</button>
                 </div>
+                <span className="text-xs text-neutral-500 font-medium">
+                  {pr.stock_quantity} sản phẩm có sẵn
+                </span>
               </div>
 
               {/* Action Buttons */}
@@ -323,59 +381,12 @@ const DetailProduct = () => {
               </div>
 
               <div className="p-5 space-y-5">
-                {/* Comment Input */}
-                {userData ? (
-                  isEligible ? (
-                    <div className="bg-neutral-50 rounded-lg p-4 border border-neutral-100">
-                      <div className="flex items-center gap-3 mb-3">
-                        <img src={userData.image} alt="User" className="w-8 h-8 rounded-full border border-neutral-200" />
-                        <div>
-                          <span className="block text-xs font-semibold text-neutral-800">{userData.name}</span>
-                          <div className="flex items-center gap-0.5">
-                            {[1, 2, 3, 4, 5].map((s) => (
-                              <Star
-                                key={s}
-                                onClick={() => setRating(s)}
-                                className={`w-3.5 h-3.5 cursor-pointer transition-all ${s <= rating ? 'text-amber-400 fill-current' : 'text-neutral-200'}`}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="relative">
-                        <textarea
-                          value={commentText}
-                          onChange={(e) => setCommentText(e.target.value)}
-                          placeholder="Cảm nhận của bạn về sản phẩm này..."
-                          className="w-full p-3 bg-white border border-neutral-200 rounded-md focus:ring-1 focus:ring-primary/30 focus:border-primary transition-all resize-none h-24 text-sm text-neutral-700"
-                        />
-                        <button
-                          onClick={handleCommentSubmit}
-                          className="absolute bottom-3 right-3 btn-primary px-4 py-1.5 flex items-center gap-1.5 rounded-md text-xs font-semibold"
-                        >
-                          {userComment ? <Edit3 size={13} /> : <Send size={13} />}
-                          {userComment ? 'Cập nhật' : 'Gửi'}
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="bg-neutral-50 rounded-lg p-5 text-center border border-dashed border-neutral-200">
-                      <ShoppingBag className="w-8 h-8 text-neutral-300 mx-auto mb-2" />
-                      <p className="text-xs font-semibold text-neutral-600">Bạn cần mua sản phẩm để đánh giá</p>
-                      <p className="text-[11px] text-neutral-400 mt-1">Hoàn tất đơn hàng để chia sẻ cảm nghĩ.</p>
-                    </div>
-                  )
-                ) : (
-                  <div className="bg-blue-50 rounded-lg p-5 text-center border border-blue-100">
-                    <p className="text-xs font-semibold text-primary mb-2">Đăng nhập để đánh giá sản phẩm</p>
-                    <button
-                      onClick={() => { navigate('/login'); window.scrollTo(0, 0); }}
-                      className="btn-primary px-5 py-1.5 rounded-md text-xs font-semibold"
-                    >
-                      Đăng nhập
-                    </button>
-                  </div>
-                )}
+                {/* Comment Info Box */}
+                <div className="bg-neutral-50 rounded-lg p-5 text-center border border-dashed border-neutral-200">
+                  <ShoppingBag className="w-8 h-8 text-neutral-300 mx-auto mb-2" />
+                  <p className="text-xs font-semibold text-neutral-600">Quy định đánh giá</p>
+                  <p className="text-[11px] text-neutral-500 mt-1">Để chống spam và đảm bảo tính xác thực, bạn chỉ có thể viết đánh giá tại mục <strong>Đơn hàng của tôi</strong> sau khi bấm xác nhận <strong>Đã nhận hàng thành công</strong>.</p>
+                </div>
 
                 {/* Comments List */}
                 <div className="space-y-0 divide-y divide-neutral-100">

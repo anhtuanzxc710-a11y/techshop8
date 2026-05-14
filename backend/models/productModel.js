@@ -30,14 +30,14 @@ const productModel = {
                 LEFT JOIN Category c ON p.CategoryID = c.CategoryID
                 WHERE p.ProductID = @ProductID
             `);
-        
+
         let product = result.recordset[0];
         if (product) {
             // Fetch specifications
             const specsResult = await pool.request()
                 .input('ProductID', sql.Int, id)
                 .query('SELECT SpecKey, SpecValue FROM ProductSpecification WHERE ProductID = @ProductID');
-            
+
             product.specifications = {};
             specsResult.recordset.forEach(spec => {
                 product.specifications[spec.SpecKey] = spec.SpecValue;
@@ -109,7 +109,7 @@ const productModel = {
                 .input('ProductName', sql.NVarChar, data.name)
                 .input('Brand', sql.NVarChar, data.brand)
                 .input('Category', sql.NVarChar, data.category)
-                .input('Price', sql.Decimal(18,2), data.price || 500)
+                .input('Price', sql.Decimal(18, 2), data.price || 500)
                 .input('StockQuantity', sql.Int, data.stock_quantity)
                 .input('IsAvailable', sql.Bit, data.available ? 1 : 0)
                 .input('IsBestSeller', sql.Bit, data.bestseller ? 1 : 0)
@@ -169,7 +169,7 @@ const productModel = {
             if (data.available !== undefined) { updates.push('IsAvailable = @IsAvailable'); request.input('IsAvailable', sql.Bit, data.available ? 1 : 0); }
             if (data.bestseller !== undefined) { updates.push('IsBestSeller = @IsBestSeller'); request.input('IsBestSeller', sql.Bit, data.bestseller ? 1 : 0); }
             if (data.image_url !== undefined) { updates.push('ImageURL = @ImageURL'); request.input('ImageURL', sql.NVarChar, data.image_url); }
-            
+
             // For stock increment (from order cancel)
             if (data.$inc && data.$inc.stock_quantity) {
                 updates.push('StockQuantity = StockQuantity + @IncStock');
@@ -183,7 +183,7 @@ const productModel = {
             if (data.specifications) {
                 const delReq = new sql.Request(transaction).input('ProductID', sql.Int, id);
                 await delReq.query(`DELETE FROM ProductSpecification WHERE ProductID = @ProductID`);
-                
+
                 for (const [key, value] of Object.entries(data.specifications)) {
                     const specReq = new sql.Request(transaction);
                     await specReq

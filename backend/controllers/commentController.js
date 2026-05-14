@@ -5,20 +5,24 @@ import sql from 'mssql';
 import { connectDB } from "../config/database.js";
 const createComment = async (req, res) => {
   try {
-    const { userId, productId, text, rating = null } = req.body;
+    const { userId, productId, orderId, text, rating = null } = req.body;
+
+    if (!orderId) {
+      return res.status(400).json({ error: "Missing orderId." });
+    }
 
     // Kiểm tra xem người dùng đã bình luận sản phẩm này chưa
-    const existingComment = await commentModel.findOne({ userId, productId });
+    const existingComment = await commentModel.findOne({ userId, productId, orderId });
 
     if (existingComment) {
 
-      return res.status(400).json({ error: "You have already commented on this product. Please edit your comment instead." });
+      return res.status(400).json({ error: "You have already commented on this product for this order. Please edit your comment instead." });
     }
     const productData = await productModel.findById(productId);
     const userData = await userModel.findById(userId);
     if (!productData || !userData) return res.status(400).json({ error: "User or Product not found" })
     // Tạo bình luận mới
-    const newComment = await commentModel.create({ userId, productId, text, rating });
+    const newComment = await commentModel.create({ userId, productId, orderId, text, rating });
 
     res.status(201).json({ message: "Comment created successfully!", comment: newComment });
   } catch (error) {
@@ -122,6 +126,34 @@ const checkEligibility = async (req, res) => {
   }
 };
 
+const deleteComment = async (req, res) => {
+  try {
+    const { commentId, productId, userId } = req.body;
+    
+    if (!commentId && (!productId || !userId)) {
+      return res.status(400).json({ success: false, message: 'Thiếu dữ liệu đầu vào' });
+    }
+    
+    let filter = {};
+    if (commentId) {
+      filter = { _id: commentId };
+    } else {
+      filter = { productId, userId };
+    }
+    
+    const isDeleted = await commentModel.remove(filter);
+    
+    if (isDeleted) {
+       return res.status(200).json({ success: true, message: 'Bình luận đã được xóa' });
+    } else {
+       return res.status(404).json({ success: false, message: 'Không tìm thấy bình luận' });
+    }
+  } catch (error) {
+    console.error('Lỗi xóa bình luận:', error);
+    res.status(500).json({ success: false, message: 'Lỗi server' });
+  }
+};
+
 export {
-  createComment, getAllComments, getCommentsByUser, getCommentsByProduct, updateComment, checkEligibility
+  createComment, getAllComments, getCommentsByUser, getCommentsByProduct, updateComment, checkEligibility, deleteComment
 }

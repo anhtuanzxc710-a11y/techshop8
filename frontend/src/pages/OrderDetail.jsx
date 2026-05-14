@@ -27,7 +27,9 @@ const OrderDetail = () => {
     try {
       const { data } = await axios.get(`${backendurl}/api/comment/get-comments`, { headers: { token } });
       if (data.comments) {
-        const ratedIds = data.comments.map(c => c.productId || c.ProductID);
+        const ratedIds = data.comments
+          .filter(c => String(c.orderId) === String(orderId))
+          .map(c => c.productId || c.ProductID);
         setRatedProducts(ratedIds);
       }
     } catch (error) {
@@ -81,6 +83,7 @@ const OrderDetail = () => {
     try {
       const { data } = await axios.post(`${backendurl}/api/comment/create-comment`, {
         productId: selectedProduct.ProductID,
+        orderId: orderId,
         rating,
         text: comment
       }, { headers: { token } });
