@@ -14,8 +14,10 @@ import authUser from "../middleware/authUser.js";
 import upload from "../middleware/multer.js";
 import {
   askGroq,
+  askGemini,
   getConversation,
   handleChat,
+  handleGeminiChat,
   handleDeleteChatHistory,
 } from "../controllers/chatbotController.js";
 import {getAllReplies, getReplyByUser} from "../controllers/replyController.js";
@@ -34,7 +36,9 @@ userRouter.post(
   updateProfile
 );
 userRouter.post("/ask-groq", askGroq);
+userRouter.post("/ask-gemini", askGemini);
 userRouter.post("/ask-and-save-groq", authUser, handleChat);
+userRouter.post("/ask-and-save-gemini", authUser, handleGeminiChat);
 userRouter.post("/delete-conversation", authUser, handleDeleteChatHistory);
 userRouter.get("/get-conversation", authUser, getConversation);
 userRouter.get("/get-all-replies", authUser, getAllReplies);

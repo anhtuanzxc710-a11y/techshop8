@@ -23,6 +23,7 @@ const conversationModel = {
                 _id: conv.ConversationID,
                 userId: conv.UserID,
                 messages: msgResult.recordset.map(m => ({
+                    role: m.SenderType,
                     sender: m.SenderType,
                     text: m.MessageContent,
                     timestamp: m.CreatedAt
@@ -50,7 +51,7 @@ const conversationModel = {
                 const msgReq = pool.request();
                 await msgReq
                     .input('ConversationID', sql.Int, convId)
-                    .input('SenderType', sql.NVarChar, msg.sender)
+                    .input('SenderType', sql.NVarChar, msg.role || msg.sender)
                     .input('MessageContent', sql.NVarChar, msg.text)
                     .query(`
                         INSERT INTO ConversationMessage (ConversationID, SenderType, MessageContent)
@@ -71,7 +72,7 @@ const conversationModel = {
                 const msgReq = pool.request();
                 await msgReq
                     .input('ConversationID', sql.Int, conv._id)
-                    .input('SenderType', sql.NVarChar, updateData.$push.messages.sender)
+                    .input('SenderType', sql.NVarChar, updateData.$push.messages.role || updateData.$push.messages.sender)
                     .input('MessageContent', sql.NVarChar, updateData.$push.messages.text)
                     .query(`
                         INSERT INTO ConversationMessage (ConversationID, SenderType, MessageContent)
@@ -85,6 +86,23 @@ const conversationModel = {
             }
         }
         return { success: true };
+    },
+
+    async deleteOne(filter) {
+        if (filter.userId) {
+            const pool = await connectDB();
+            const conv = await this.findOne(filter);
+            if (conv) {
+                await pool.request()
+                    .input('ConversationID', sql.Int, conv._id)
+                    .query('DELETE FROM ConversationMessage WHERE ConversationID = @ConversationID');
+                await pool.request()
+                    .input('ConversationID', sql.Int, conv._id)
+                    .query('DELETE FROM Conversation WHERE ConversationID = @ConversationID');
+                return true;
+            }
+        }
+        return false;
     }
 };
 

@@ -107,7 +107,7 @@ const AppContextProvider=(props)=>{
     };
     const addMessages = async(newMsgs) => {
         try {
-            const a = await axios.post(backendurl+'/api/user/ask-and-save-groq',{message: newMsgs},{headers:{token}});
+            const a = await axios.post(backendurl+'/api/user/ask-and-save-gemini',{message: newMsgs},{headers:{token}});
             if (!a) toast.error("Can't send message");
             setMessages(a.data.data);
         } catch (error) {

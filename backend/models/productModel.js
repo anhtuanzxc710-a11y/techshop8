@@ -89,7 +89,11 @@ const productModel = {
         // 4. Search Query (Across name, brand, category)
         if (filter.search) {
             query += ` AND (p.ProductName LIKE @Search OR b.BrandName LIKE @Search OR c.CategoryName LIKE @Search)`;
-            request.input('Search', sql.NVarChar, `%${filter.search}%`);
+        }
+        // 5. Filter by Bestseller
+        if (filter.bestseller !== undefined && filter.bestseller !== null) {
+            query += ' AND p.IsBestSeller = @BestSeller';
+            request.input('BestSeller', sql.Bit, filter.bestseller ? 1 : 0);
         }
 
         query += ' ORDER BY p.ProductID DESC';
