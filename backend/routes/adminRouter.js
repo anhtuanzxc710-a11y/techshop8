@@ -8,7 +8,8 @@ import {
   updateCart,
   getAllUsers,
   toggleUserStatus,
-  getUserOrders
+  getUserOrders,
+  getRevenueStats
 } from "../controllers/adminController.js";
 import authAdmin from "../middleware/authAdmin.js";
 import upload from "../middleware/multer.js";
@@ -38,6 +39,7 @@ const adminRouter = express.Router();
 adminRouter.post("/add-product", upload.fields([{ name: 'image', maxCount: 1 }, { name: 'images', maxCount: 5 }]), authAdmin, addProduct);
 adminRouter.get("/all-products", authAdmin, getProducts);
 adminRouter.get("/admin-dashboard", authAdmin, adminDashboard);
+adminRouter.get("/revenue-stats", authAdmin, getRevenueStats);
 adminRouter.post(
   "/update-product",
   upload.fields([{ name: 'image', maxCount: 1 }, { name: 'images', maxCount: 5 }]),

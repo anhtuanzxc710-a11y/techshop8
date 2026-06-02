@@ -8,6 +8,7 @@ const AdminContextProvider = (props) => {
     const [aToken, setAToken] = useState(localStorage.getItem('aToken') ? localStorage.getItem('aToken') : '')
     const [products, setProducts] = useState([])
     const [dashData, setDashData] = useState(false)
+    const [revenueStats, setRevenueStats] = useState(null)
     const [carts, setCarts] = useState([])
     const [comments, setComments] = useState([])
     const [replies, setReplies] = useState([])
@@ -27,7 +28,7 @@ const AdminContextProvider = (props) => {
             toast.error(error.message)
         }
     }
-    const getCarts = async (req, res) => {
+    const getCarts = async () => {
         try {
             const { data } = await axios.get(backendurl + '/api/admin/all-carts', { headers: { aToken } })
             if (data) {
@@ -37,7 +38,7 @@ const AdminContextProvider = (props) => {
             toast.error(error.message);
         }
     }
-    const getComments = async (req, res) => {
+    const getComments = async () => {
         try {
             const { data } = await axios.get(backendurl + '/api/admin/comments', { headers: { aToken } })
             if (data) {
@@ -112,6 +113,41 @@ const AdminContextProvider = (props) => {
             }
         } catch (error) {
             toast.error(error.message)
+        }
+    }
+    const getRevenueStats = async (filters = {}) => {
+        try {
+            const { startDate, endDate, groupBy, orderStatus, paymentMethod, categoryId, compare } = filters;
+            const params = {};
+            if (startDate) params.startDate = startDate;
+            if (endDate) params.endDate = endDate;
+            if (groupBy) params.groupBy = groupBy;
+            if (orderStatus) params.orderStatus = orderStatus;
+            if (paymentMethod) params.paymentMethod = paymentMethod;
+            if (categoryId) params.categoryId = categoryId;
+            if (compare !== undefined) params.compare = String(compare);
+
+            const { data } = await axios.get(backendurl + '/api/admin/revenue-stats', {
+                params,
+                headers: { aToken }
+            });
+            if (data.success) {
+                const statsWithMeta = {
+                    ...data.stats,
+                    isMockData: data.isMockData || false,
+                    mockMessage: data.message || null
+                };
+                setRevenueStats(statsWithMeta);
+                return statsWithMeta;
+            } else {
+                toast.error(data.message || "Lỗi khi tải thống kê doanh thu");
+                setRevenueStats({ _error: true, _errorMessage: data.message || "Lỗi không xác định" });
+                return null;
+            }
+        } catch (error) {
+            toast.error(error.message);
+            setRevenueStats({ _error: true, _errorMessage: error.message });
+            return null;
         }
     }
     const getAllReplies = async () => {
@@ -209,7 +245,7 @@ const AdminContextProvider = (props) => {
     }
     const createReplyNotification = async (userId, replyText, productName) => {
         try {
-            const x = await axios.post(
+            await axios.post(
                 `${backendurl}/api/admin/create-notification`,
                 { userId, text: `The admin replied your comment in ${productName} page: ${replyText}.` },  // Truyền các tham số vào
                 { headers: { aToken } }
@@ -253,6 +289,7 @@ const AdminContextProvider = (props) => {
         backendurl, products, setProducts,
         getProducts, changeAvailability,
         dashData, getDashData, setDashData,
+        revenueStats, setRevenueStats, getRevenueStats,
         carts, setCarts, search, setSearch, filterProducts, setFilterProducts,
         comments, setComments,
         getCarts, getComments, removeCart,

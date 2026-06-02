@@ -89,6 +89,7 @@ const productModel = {
         // 4. Search Query (Across name, brand, category)
         if (filter.search) {
             query += ` AND (p.ProductName LIKE @Search OR b.BrandName LIKE @Search OR c.CategoryName LIKE @Search)`;
+            request.input('Search', sql.NVarChar, `%${filter.search}%`);
         }
         // 5. Filter by Bestseller
         if (filter.bestseller !== undefined && filter.bestseller !== null) {
@@ -99,7 +100,27 @@ const productModel = {
         query += ' ORDER BY p.ProductID DESC';
 
         const result = await request.query(query);
-        return result.recordset.map(p => this._mapProduct(p));
+        const products = result.recordset;
+
+        if (products.length > 0) {
+            const productIds = products.map(p => p.ProductID);
+            const specsResult = await pool.request()
+                .query(`SELECT ProductID, SpecKey, SpecValue FROM ProductSpecification WHERE ProductID IN (${productIds.join(',')})`);
+            
+            const specsMap = {};
+            specsResult.recordset.forEach(spec => {
+                if (!specsMap[spec.ProductID]) {
+                    specsMap[spec.ProductID] = {};
+                }
+                specsMap[spec.ProductID][spec.SpecKey] = spec.SpecValue;
+            });
+
+            products.forEach(p => {
+                p.specifications = specsMap[p.ProductID] || {};
+            });
+        }
+
+        return products.map(p => this._mapProduct(p));
     },
 
     async create(data) {
