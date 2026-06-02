@@ -151,6 +151,11 @@ const loginUser = async (req, res) => {
     if (!user) {
       return res.json({ success: false, message: "User does not exist" });
     }
+
+    if (user.isActive === false) {
+      return res.json({ success: false, message: "Tài khoản của bạn đã bị khóa bởi quản trị viên" });
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (isMatch) {
       const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);

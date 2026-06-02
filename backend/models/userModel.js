@@ -12,7 +12,8 @@ function mapUser(row) {
         phone: row.Phone || '',
         address: row.Address || '',
         dob: row.DOB || '',
-        gender: row.Gender || ''
+        gender: row.Gender || '',
+        isActive: row.IsActive
     };
 }
 
